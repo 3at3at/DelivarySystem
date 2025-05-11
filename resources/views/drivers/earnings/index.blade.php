@@ -1,37 +1,29 @@
 @extends('layouts.driver')
 
 @section('content')
-<div class="container mt-4">
-    <h3>Earnings Dashboard</h3>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>Total Revenue: <span class="text-success">${{ number_format($totalRevenue, 2) }}</span></h5>
-            <h5>Commission (10%): <span class="text-danger">-${{ number_format($totalCommission, 2) }}</span></h5>
-            <h5>Net Earnings: <span class="text-primary">${{ number_format($netEarnings, 2) }}</span></h5>
-        </div>
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-wallet"></i> Earnings Summary</h5>
     </div>
+    <div class="card-body">
+        <p><strong>Total Earnings:</strong> ${{ $totalEarnings ?? '0.00' }}</p>
+        <p><strong>Commission Deducted:</strong> ${{ $commission ?? '0.00' }}</p>
+        <p><strong>Net Income:</strong> ${{ $netIncome ?? '0.00' }}</p>
 
-    <h5>Completed Deliveries</h5>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Pickup</th>
-                <th>Dropoff</th>
-                <th>Price</th>
-                <th>Scheduled At</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($completedDeliveries as $delivery)
-                <tr>
-                    <td>{{ $delivery->pickup_location }}</td>
-                    <td>{{ $delivery->dropoff_location }}</td>
-                    <td>${{ number_format($delivery->price, 2) }}</td>
-                    <td>{{ $delivery->scheduled_at }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <hr>
+
+        <h6>Recent Deliveries</h6>
+<ul class="list-group">
+    @forelse($recentDeliveries as $delivery)
+        <li class="list-group-item">
+            {{ $delivery->pickup_location }} to {{ $delivery->dropoff_location }} –
+            ${{ number_format($delivery->price ?? 0, 2) }} 
+            on {{ optional($delivery->updated_at)->format('Y-m-d') ?? 'N/A' }}
+        </li>
+    @empty
+        <li class="list-group-item">No recent deliveries.</li>
+    @endforelse
+</ul>
+    </div>
 </div>
 @endsection

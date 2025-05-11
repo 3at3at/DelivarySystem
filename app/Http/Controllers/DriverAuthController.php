@@ -17,21 +17,23 @@ class DriverAuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|unique:drivers',
-            'password' => 'required|confirmed',
-            'vehicle_type' => 'required',
-            'plate_number' => 'required',
-            'pricing_model' => 'required|in:fixed,per_km',
-            'price' => 'required|numeric',
-            'scheduled_at' => 'nullable|date',
-            'fcm_token' => 'nullable|string'
-        ]);
+    'name' => 'required',
+    'email' => 'required|email|unique:drivers',
+    'phone' => 'required|string|max:15',
+    'password' => 'required|confirmed',
+    'vehicle_type' => 'required',
+    'plate_number' => 'required',
+    'pricing_model' => 'required|in:fixed,per_km',
+    'price' => 'required|numeric',
+    'fcm_token' => 'nullable|string'
+]);
+
     
         $driver = Driver::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'phone' => $request->phone,
             'vehicle_type' => $request->vehicle_type,
             'plate_number' => $request->plate_number,
             'pricing_model' => $request->pricing_model,

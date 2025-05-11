@@ -5,6 +5,7 @@ use App\Http\Controllers\DriverAuthController;
 use App\Http\Controllers\DriverDeliveryController;
 use App\Http\Controllers\DriverAvailabilityController;
 use App\Http\Controllers\DriverEarningsController;
+use App\Http\Controllers\DriverDashboardController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -54,3 +55,13 @@ Route::middleware('auth:driver')->prefix('driver')->group(function () {
 
 
 Route::post('/driver/save-token', [DriverAuthController::class, 'saveToken']);
+
+Route::middleware('auth:driver')->group(function () {
+    Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])->name('driver.dashboard');
+});
+
+
+Route::middleware('auth:driver')->get('/driver/profile', function () {
+    $driver = Auth::guard('driver')->user();
+    return view('drivers.profile', compact('driver'));
+})->name('driver.profile');
