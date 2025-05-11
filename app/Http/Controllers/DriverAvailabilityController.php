@@ -18,14 +18,22 @@ class DriverAvailabilityController extends Controller
         $driver = Auth::guard('driver')->user();
 
         $request->validate([
-            'working_hours' => 'nullable|string',
+            'working_schedule' => 'required|array',
             'location' => 'nullable|string',
-            'is_available' => 'required|boolean'
+            'is_available' => 'required|boolean',
         ]);
 
-        $driver->update($request->only('working_hours', 'location', 'is_available'));
+        // Convert schedule to a formatted string (one line per day)
+        $working_hours = collect($request->working_schedule)
+            ->map(fn($time, $day) => "$day: $time")
+            ->implode("\n");
 
-        return back()->with('success', 'Availability updated.');
+        $driver->update([
+            'working_hours' => $working_hours,
+            'location' => $request->location,
+            'is_available' => $request->is_available,
+        ]);
+
+        return back()->with('success', 'Availability updated successfully.');
     }
 }
-

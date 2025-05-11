@@ -5,15 +5,20 @@
     <title>Driver Login</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .spinner-border {
+            vertical-align: middle;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="container mt-5">
     <div class="card shadow-lg">
-        <div class="card-header bg-success text-white">
+        <div class="card-header bg-primary text-white">
             <h4 class="mb-0">Driver Login</h4>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('driver.login') }}">
+            <form method="POST" action="{{ route('driver.login') }}" id="loginForm">
                 @csrf
                 <input type="hidden" id="fcm_token" name="fcm_token">
 
@@ -25,15 +30,24 @@
 
                 <div class="mb-3">
                     <label>Email</label>
-                    <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
+                    <input type="email" name="email" class="form-control" required>
                 </div>
 
                 <div class="mb-3">
                     <label>Password</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <input type="password" name="password" id="password" class="form-control" required>
                 </div>
 
-                <button type="submit" class="btn btn-success w-100">Login</button>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="togglePassword">
+                    <label class="form-check-label" for="togglePassword">Show Password</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                    <span id="submitText">Login</span>
+                    <span id="submitLoading" class="spinner-border spinner-border-sm d-none"></span>
+                </button>
+
                 <div class="mt-3 text-center">
                     <a href="{{ route('driver.register') }}">Create a new account</a>
                 </div>
@@ -55,9 +69,7 @@
         appId: "1:683930011833:web:d0bdc0951a73fd0a023368",
         measurementId: "G-KZDTHFWQPF"
     };
-
     firebase.initializeApp(firebaseConfig);
-
     const messaging = firebase.messaging();
 
     messaging.requestPermission()
@@ -65,7 +77,6 @@
         .then((token) => {
             document.getElementById('fcm_token').value = token;
 
-            // Optional: send to backend after login
             fetch("{{ url('/driver/save-token') }}", {
                 method: "POST",
                 headers: {
@@ -76,6 +87,17 @@
             });
         })
         .catch((err) => console.warn("FCM Error:", err));
+
+    document.getElementById('togglePassword').addEventListener('change', function () {
+        const password = document.getElementById('password');
+        password.type = this.checked ? 'text' : 'password';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function () {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitText').classList.add('d-none');
+        document.getElementById('submitLoading').classList.remove('d-none');
+    });
 </script>
 </body>
 </html>

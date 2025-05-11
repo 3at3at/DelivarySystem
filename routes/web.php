@@ -9,6 +9,7 @@ use App\Http\Controllers\DriverAuthController;
 use App\Http\Controllers\DriverDeliveryController;
 use App\Http\Controllers\DriverAvailabilityController;
 use App\Http\Controllers\DriverEarningsController;
+use App\Http\Controllers\DriverDashboardController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -41,6 +42,19 @@ Route::middleware('auth:driver')->prefix('driver')->group(function () {
 });
 Route::post('/driver/save-token', [DriverAuthController::class, 'saveToken']);
 
+Route::post('/driver/save-token', [DriverAuthController::class, 'saveToken']);
+
+Route::middleware('auth:driver')->group(function () {
+    Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])->name('driver.dashboard');
+});
+
+
+Route::middleware('auth:driver')->get('/driver/profile', function () {
+    $driver = Auth::guard('driver')->user();
+    return view('drivers.profile', compact('driver'));
+})->name('driver.profile');
+
+
 
 Route::middleware('adminpanel')->group(function () {
     Route::get('/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
@@ -61,6 +75,3 @@ Route::prefix('admin')->middleware(['adminpanel', 'checkadmin'])->group(function
     Route::post('/loyalty/update', [AdminController::class, 'updateLoyalty'])->name('admin.loyalty.update');
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
 });
-
-
-
