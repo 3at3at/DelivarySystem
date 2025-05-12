@@ -17,12 +17,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('driver.login');
+})->name('login');
+
+
 
 Route::prefix('driver')->group(function () {                                                                                                     
-Route::get('/login', fn () => redirect()->route('driver.login'))->name('login');
-
-Route::prefix('driver')->group(function () {
->>>>>>> origin/driver-module
     Route::get('/register', [DriverAuthController::class, 'showRegisterForm'])->name('driver.register');
     Route::post('/register', [DriverAuthController::class, 'register']);
     Route::get('/login', [DriverAuthController::class, 'showLoginForm'])->name('driver.login');
@@ -38,10 +39,10 @@ Route::prefix('driver')->group(function () {
 
 
     Route::post('/save-token', [DriverAuthController::class, 'saveToken']);
-});
+
 
 // 🔐 Authenticated driver-only routes
->>>>>>> origin/driver-module
+
 Route::middleware('auth:driver')->prefix('driver')->group(function () {
     Route::get('/dashboard', [DriverDashboardController::class, 'index'])->name('driver.dashboard');
     Route::post('/logout', [DriverAuthController::class, 'logout'])->name('driver.logout');
@@ -87,8 +88,8 @@ Route::middleware('auth:driver')->get('/driver/profile', function () {
 })->name('driver.profile');
 
 
-Route::post('/driver/orders/{id}/accept', [DriverController::class, 'acceptOrder'])->name('driver.orders.accept');
-Route::post('/driver/orders/{id}/reject', [DriverController::class, 'rejectOrder'])->name('driver.orders.reject');
+Route::post('/driver/orders/{id}/accept', [DriverDeliveryController::class, 'acceptOrder'])->name('driver.orders.accept');
+Route::post('/driver/orders/{id}/reject', [DriverDeliveryController::class, 'rejectOrder'])->name('driver.orders.reject');
 
 
 

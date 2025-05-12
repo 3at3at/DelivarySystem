@@ -13,9 +13,12 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     public function dashboard()
-    {
-        return view('admin.dashboard');
-    }
+{
+    $activeDrivers = Driver::where('is_available', true)->count(); // or your actual active status field
+    $pendingOrders = Order::where('status', 'pending')->count(); // or your actual pending status field
+
+    return view('admin.dashboard', compact('activeDrivers', 'pendingOrders'));
+}
 
     public function drivers()
     {

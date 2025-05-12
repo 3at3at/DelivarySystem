@@ -52,15 +52,36 @@ class DriverAuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
+{
+    $credentials = $request->only('email', 'password');
 
-        if (Auth::guard('driver')->attempt($credentials)) {
-            return redirect()->route('driver.dashboard');
+    // Attempt login
+    if (Auth::guard('driver')->attempt($credentials)) {
+        $driver = Auth::guard('driver')->user();
+
+        // ❌ Block based on status
+        if ($driver->status === 'pending') {
+            Auth::guard('driver')->logout();
+            return back()->withErrors(['email' => 'Your account is pending approval. Please wait for admin.']);
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        if ($driver->status === 'suspended') {
+            Auth::guard('driver')->logout();
+            return back()->withErrors(['email' => 'Your account is suspended. Contact support.']);
+        }
+
+        if ($driver->status === 'blocked') {
+            Auth::guard('driver')->logout();
+            return back()->withErrors(['email' => 'Your account is blocked. Access denied.']);
+        }
+
+        // ✅ Approved
+        return redirect()->route('driver.dashboard');
     }
+
+    return back()->withErrors(['email' => 'Invalid credentials']);
+}
+
 
     public function logout()
     {
