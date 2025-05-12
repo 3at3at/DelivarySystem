@@ -24,33 +24,47 @@
                 </thead>
                 <tbody>
                     @forelse($deliveries as $delivery)
-                    <tr>
-                        <td>{{ $delivery->pickup_location }}</td>
-                        <td>{{ $delivery->dropoff_location }}</td>
-                        <td>{{ $delivery->package_details }}</td>
-                        <td>
-                            <span class="badge bg-info text-dark">{{ $delivery->status }}</span>
-                        </td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($delivery->scheduled_at)->format('Y-m-d H:i') ?? 'N/A' }}
-                        </td>
-                        <td>
-                            <form method="POST" action="{{ route('driver.delivery.update', $delivery->id) }}" class="d-flex gap-2 align-items-center">
-                                @csrf
-                                <select name="status" class="form-select form-select-sm w-auto">
-                                    <option {{ $delivery->status == 'Accepted' ? 'selected' : '' }}>Accepted</option>
-                                    <option {{ $delivery->status == 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                                    <option {{ $delivery->status == 'Delivered' ? 'selected' : '' }}>Delivered</option>
-                                    <option {{ $delivery->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
-                            </form>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>{{ $delivery->pickup_location }}</td>
+                            <td>{{ $delivery->dropoff_location }}</td>
+                            <td>{{ $delivery->package_details }}</td>
+                            <td>
+                                <span class="badge bg-info text-dark">{{ $delivery->status }}</span><br>
+                                <small class="text-muted">Driver: {{ ucfirst($delivery->driver_status) }}</small>
+                            </td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($delivery->scheduled_at)->format('Y-m-d H:i') ?? 'N/A' }}
+                            </td>
+                            <td>
+                                @if($delivery->driver_status === 'pending')
+                                    <form action="{{ route('driver.deliveries.accept', $delivery->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                                    </form>
+
+                                    <form action="{{ route('driver.deliveries.reject', $delivery->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                    </form>
+                                @elseif($delivery->driver_status === 'accepted')
+                                    <form method="POST" action="{{ route('driver.delivery.update', $delivery->id) }}" class="d-flex gap-2 align-items-center">
+                                        @csrf
+                                        <select name="status" class="form-select form-select-sm w-auto">
+                                            <option {{ $delivery->status == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                            <option {{ $delivery->status == 'Delivered' ? 'selected' : '' }}>Delivered</option>
+                                            <option {{ $delivery->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                    </form>
+                                @elseif($delivery->driver_status === 'rejected')
+                                    <span class="text-danger">You rejected this</span>
+                                @endif
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="6" class="text-center">No deliveries assigned.</td>
-                    </tr>
+                        <tr>
+                            <td colspan="6" class="text-center">No deliveries assigned.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

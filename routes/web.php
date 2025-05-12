@@ -55,8 +55,12 @@ Route::middleware('auth:driver')->get('/driver/profile', function () {
 })->name('driver.profile');
 
 
+Route::post('/driver/orders/{id}/accept', [DriverController::class, 'acceptOrder'])->name('driver.orders.accept');
+Route::post('/driver/orders/{id}/reject', [DriverController::class, 'rejectOrder'])->name('driver.orders.reject');
 
-Route::middleware('adminpanel')->group(function () {
+
+
+Route::prefix('admin')->middleware('adminpanel')->group(function () {
     Route::get('/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [AdminLoginController::class, 'login'])->name('admin.login.submit');
 });
@@ -66,11 +70,13 @@ Route::prefix('admin')->middleware(['adminpanel', 'checkadmin'])->group(function
     Route::post('/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/drivers', [AdminController::class, 'drivers'])->name('admin.drivers');
-    Route::post('/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
     Route::post('/drivers/{id}/approve', [AdminController::class, 'approveDriver'])->name('admin.drivers.approve');
     Route::post('/drivers/{id}/suspend', [AdminController::class, 'suspendDriver'])->name('admin.drivers.suspend');
     Route::post('/drivers/{id}/block', [AdminController::class, 'blockDriver'])->name('admin.drivers.block');
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::post('/orders/{id}/assign', [AdminController::class, 'assignDriver'])->name('admin.orders.assign');
+    Route::get('/drivers/search', [AdminController::class, 'searchDrivers'])->name('admin.drivers.search');
+
     Route::get('/loyalty', [AdminController::class, 'loyaltySettings'])->name('admin.loyalty');
     Route::post('/loyalty/update', [AdminController::class, 'updateLoyalty'])->name('admin.loyalty.update');
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');

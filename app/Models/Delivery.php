@@ -14,5 +14,11 @@ class Delivery extends Model
     {
         return $this->belongsTo(Driver::class);
     }
+
+    public function client()
+{
+    return $this->belongsTo(\App\Models\User::class, 'client_id');
+}
+
 }
 
