@@ -42,9 +42,8 @@ class DriverAuthController extends Controller
             'fcm_token' => $request->fcm_token,
         ]);
     
-        Auth::guard('driver')->login($driver);
-    
-        return redirect()->route('driver.dashboard');
+        return redirect()->route('driver.login')->with('success', 'Registration successful. Please log in.');
+
     }
     
     public function showLoginForm()
