@@ -1,24 +1,33 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
 
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DriverAuthController;
 use App\Http\Controllers\DriverDeliveryController;
 use App\Http\Controllers\DriverAvailabilityController;
 use App\Http\Controllers\DriverEarningsController;
 use App\Http\Controllers\DriverDashboardController;
+
 Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::prefix('driver')->group(function () {                                                                                                     
+Route::get('/login', fn () => redirect()->route('driver.login'))->name('login');
+
+Route::prefix('driver')->group(function () {
+>>>>>>> origin/driver-module
     Route::get('/register', [DriverAuthController::class, 'showRegisterForm'])->name('driver.register');
     Route::post('/register', [DriverAuthController::class, 'register']);
     Route::get('/login', [DriverAuthController::class, 'showLoginForm'])->name('driver.login');
     Route::post('/login', [DriverAuthController::class, 'login']);
+
     Route::middleware('auth:driver')->group(function () {
         Route::get('/dashboard', function () {
             return view('drivers.dashboard');
@@ -26,9 +35,20 @@ Route::prefix('driver')->group(function () {
         Route::post('/logout', [DriverAuthController::class, 'logout'])->name('driver.logout');
     });
 });
+
+
+    Route::post('/save-token', [DriverAuthController::class, 'saveToken']);
+});
+
+// 🔐 Authenticated driver-only routes
+>>>>>>> origin/driver-module
 Route::middleware('auth:driver')->prefix('driver')->group(function () {
+    Route::get('/dashboard', [DriverDashboardController::class, 'index'])->name('driver.dashboard');
+    Route::post('/logout', [DriverAuthController::class, 'logout'])->name('driver.logout');
+
     Route::get('/deliveries', [DriverDeliveryController::class, 'index'])->name('driver.deliveries');
     Route::post('/deliveries/{id}/update-status', [DriverDeliveryController::class, 'updateStatus'])->name('driver.delivery.update');
+
 });
 Route::middleware('auth:driver')->prefix('driver')->group(function () {
     Route::get('/availability', [DriverAvailabilityController::class, 'edit'])->name('driver.availability');
@@ -38,8 +58,20 @@ Route::middleware('auth:driver')->prefix('driver')->group(function () {
     Route::get('/calendar', [DriverDeliveryController::class, 'calendar'])->name('driver.calendar');
 });
 Route::middleware('auth:driver')->prefix('driver')->group(function () {
+
+
+    Route::get('/availability', [DriverAvailabilityController::class, 'edit'])->name('driver.availability');
+    Route::post('/availability', [DriverAvailabilityController::class, 'update']);
+
+    Route::get('/calendar', [DriverDeliveryController::class, 'calendar'])->name('driver.calendar');
     Route::get('/earnings', [DriverEarningsController::class, 'index'])->name('driver.earnings');
+
+    Route::get('/profile', function () {
+        $driver = Auth::guard('driver')->user();
+        return view('drivers.profile', compact('driver'));
+    })->name('driver.profile');
 });
+
 Route::post('/driver/save-token', [DriverAuthController::class, 'saveToken']);
 
 Route::post('/driver/save-token', [DriverAuthController::class, 'saveToken']);
@@ -81,3 +113,4 @@ Route::prefix('admin')->middleware(['adminpanel', 'checkadmin'])->group(function
     Route::post('/loyalty/update', [AdminController::class, 'updateLoyalty'])->name('admin.loyalty.update');
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
 });
+
