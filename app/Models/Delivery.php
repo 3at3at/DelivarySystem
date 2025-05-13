@@ -6,9 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Delivery extends Model
 {
-    protected $fillable = [
-        'driver_id', 'pickup_location', 'dropoff_location', 'package_details', 'status', 'scheduled_at'
-    ];
+ protected $fillable = [
+    'order_id',
+    'client_id',
+    'driver_id',
+    'pickup_location',
+    'dropoff_location',
+    'package_type',
+    'package_weight',
+    'package_dimensions',
+    'urgency',
+    'status',
+    'price',
+
+];
+
 
     public function driver()
     {
@@ -18,6 +30,10 @@ class Delivery extends Model
     public function client()
 {
     return $this->belongsTo(\App\Models\User::class, 'client_id');
+}
+public function order()
+{
+    return $this->belongsTo(Order::class);
 }
 
 }

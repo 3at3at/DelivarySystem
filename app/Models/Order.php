@@ -19,5 +19,11 @@ class Order extends Model
     {
         return $this->belongsTo(Driver::class);
     }
+
+    public function delivery()
+{
+    return $this->hasOne(Delivery::class);
+}
+
 }
 

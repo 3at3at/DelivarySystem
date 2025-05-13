@@ -22,4 +22,15 @@ protected $fillable = [
     protected $casts = [
         'scheduled_at' => 'datetime',
     ];
+    public function deliveries()
+{
+    return $this->hasMany(Delivery::class);
+}
+// Driver.php
+public function reviews()
+{
+    return $this->hasMany(Review::class);
+}
+
+
 }

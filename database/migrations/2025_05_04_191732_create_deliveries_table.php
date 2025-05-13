@@ -11,18 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('deliveries', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('driver_id')->constrained('drivers')->onDelete('cascade');
-            $table->string('pickup_location');
-            $table->string('dropoff_location');
-            $table->string('package_details')->nullable();
-            $table->enum('status', ['Pending', 'Accepted', 'In Progress', 'Delivered', 'Cancelled'])->default('Pending');
-            $table->timestamp('scheduled_at')->nullable(); // for calendar sync
-            $table->timestamps();
-        });
+     Schema::create('deliveries', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+    $table->foreignId('client_id')->constrained('users')->onDelete('cascade');
+    $table->foreignId('driver_id')->nullable()->constrained('drivers')->onDelete('set null');
+    $table->string('pickup_location');
+    $table->string('dropoff_location');
+    $table->string('package_details')->nullable();
+    $table->enum('urgency', ['normal', 'urgent'])->default('normal');
+    $table->enum('status', ['Pending', 'Accepted', 'In Progress', 'Delivered', 'Cancelled'])->default('Pending');
+    $table->timestamp('scheduled_at')->nullable();
+
+    $table->timestamps();
+});
+
     }
-    
+
     /**
      * Reverse the migrations.
      */

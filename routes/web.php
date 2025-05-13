@@ -6,23 +6,32 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
 
 
+
+
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DriverAuthController;
 use App\Http\Controllers\DriverDeliveryController;
 use App\Http\Controllers\DriverAvailabilityController;
 use App\Http\Controllers\DriverEarningsController;
 use App\Http\Controllers\DriverDashboardController;
+use App\Http\Controllers\DriverController;
+
+
+use App\Http\Controllers\ClientDeliveryController;
+use App\Http\Controllers\ClientDriverController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientAuthController;
+use App\Http\Controllers\ReviewController;
+
 
 Route::get('/', function () {
     return view('welcome');
 });
-
-
-Route::prefix('driver')->group(function () {                                                                                                     
+Route::prefix('driver')->group(function () {
 Route::get('/login', fn () => redirect()->route('driver.login'))->name('login');
 
 Route::prefix('driver')->group(function () {
->>>>>>> origin/driver-module
+
     Route::get('/register', [DriverAuthController::class, 'showRegisterForm'])->name('driver.register');
     Route::post('/register', [DriverAuthController::class, 'register']);
     Route::get('/login', [DriverAuthController::class, 'showLoginForm'])->name('driver.login');
@@ -41,7 +50,7 @@ Route::prefix('driver')->group(function () {
 });
 
 // 🔐 Authenticated driver-only routes
->>>>>>> origin/driver-module
+
 Route::middleware('auth:driver')->prefix('driver')->group(function () {
     Route::get('/dashboard', [DriverDashboardController::class, 'index'])->name('driver.dashboard');
     Route::post('/logout', [DriverAuthController::class, 'logout'])->name('driver.logout');
@@ -87,8 +96,8 @@ Route::middleware('auth:driver')->get('/driver/profile', function () {
 })->name('driver.profile');
 
 
-Route::post('/driver/orders/{id}/accept', [DriverController::class, 'acceptOrder'])->name('driver.orders.accept');
-Route::post('/driver/orders/{id}/reject', [DriverController::class, 'rejectOrder'])->name('driver.orders.reject');
+Route::post('/driver/orders/{id}/accept', [DriverDeliveryController::class, 'acceptOrder'])->name('driver.orders.accept');
+Route::post('/driver/orders/{id}/reject', [DriverDeliveryController::class, 'rejectOrder'])->name('driver.orders.reject');
 
 
 
@@ -112,5 +121,38 @@ Route::prefix('admin')->middleware(['adminpanel', 'checkadmin'])->group(function
     Route::get('/loyalty', [AdminController::class, 'loyaltySettings'])->name('admin.loyalty');
     Route::post('/loyalty/update', [AdminController::class, 'updateLoyalty'])->name('admin.loyalty.update');
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
+
+
 });
 
+
+Route::prefix('client')->group(function () {
+    Route::get('/register', [ClientAuthController::class, 'showRegisterForm'])->name('client.register');
+    Route::post('/register', [ClientAuthController::class, 'register']);
+
+    Route::get('/login', [ClientAuthController::class, 'showLoginForm'])->name('client.login');
+    Route::post('/login', [ClientAuthController::class, 'login']);
+
+    Route::post('/logout', [ClientAuthController::class, 'logout'])->name('client.logout');
+});
+
+Route::middleware(['client'])->prefix('client')->group(function () {
+    Route::get('/dashboard', [ClientController::class, 'dashboard'])->name('client.dashboard');
+});
+
+
+Route::middleware(['client'])->prefix('client')->group(function () {
+    Route::get('/deliveries/create', [ClientDeliveryController::class, 'create'])->name('client.deliveries.create');
+    Route::post('/deliveries/store', [ClientDeliveryController::class, 'store'])->name('client.deliveries.store');
+    Route::get('/drivers', [ClientDriverController::class, 'list'])->name('client.drivers.list');
+Route::get('/drivers/{id}', [ClientDriverController::class, 'show'])->name('client.drivers.show');
+    Route::post('/reviews/store', [ReviewController::class, 'store'])->name('client.reviews.store');
+    Route::get('/orders/{id}/review', [ReviewController::class, 'showReviewForm'])->name('client.review.form');
+
+
+
+});
+Route::middleware(['client'])->prefix('client')->group(function () {
+    Route::get('/orders', [ClientDeliveryController::class, 'index'])->name('client.orders.index');
+
+});
