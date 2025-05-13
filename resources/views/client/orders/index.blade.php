@@ -35,8 +35,18 @@
 </td>
 
 
-            </td>
+
             <td class="p-3">{{ $order->created_at->format('Y-m-d H:i') }}</td>
+            <td>
+        @if ($order->delivery && $order->delivery->driver_id)
+           <a href="{{ route('client.chat', ['orderId' => $order->id]) }}"
+   class="inline-block px-4 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition">
+   💬 Chat with Driver
+</a>
+        @else
+            <span class="text-muted">No Driver Yet</span>
+        @endif
+    </td>
         </tr>
         @endforeach
     </tbody>

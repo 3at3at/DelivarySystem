@@ -55,6 +55,12 @@
                                             <option {{ $delivery->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
                                         </select>
                                         <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                        @if($delivery->order)
+    <a href="{{ route('driver.chat', ['orderId' => $delivery->order->id]) }}" class="btn btn-sm btn-primary">
+        💬 Chat with Client
+    </a>
+@endif
+
                                     </form>
                                 @elseif($delivery->driver_status === 'rejected')
                                     <span class="text-danger">You rejected this</span>

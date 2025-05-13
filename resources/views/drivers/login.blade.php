@@ -18,7 +18,8 @@
             <h4 class="mb-0">Driver Login</h4>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('driver.login') }}" id="loginForm">
+          <form method="POST" action="{{ route('driver.login.submit') }}" id="loginForm">
+
                 @csrf
                 <input type="hidden" id="fcm_token" name="fcm_token">
 

@@ -64,7 +64,7 @@ class DriverDeliveryController extends Controller
     public function accept($id)
     {
         $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())
-            ->where('driver_status', 'pending')
+            ->where('is_available', true)
             ->findOrFail($id);
 
         $delivery->status = 'in_progress';
@@ -77,7 +77,7 @@ class DriverDeliveryController extends Controller
     public function reject($id)
     {
         $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())
-            ->where('driver_status', 'pending')
+            ->where('is_available', true)
             ->findOrFail($id);
 
         $delivery->driver_status = 'rejected';

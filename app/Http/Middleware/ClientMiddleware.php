@@ -13,6 +13,6 @@ class ClientMiddleware
             return $next($request);
         }
 
-        return redirect()->route('client.login');
+         return abort(401, 'Unauthorized action');
     }
 }

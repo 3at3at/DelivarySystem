@@ -22,20 +22,24 @@ use App\Http\Controllers\ClientDriverController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientAuthController;
 use App\Http\Controllers\ReviewController;
-
+use App\Http\Controllers\MessageController;
 
 Route::get('/', function () {
     return view('welcome');
 });
-Route::prefix('driver')->group(function () {
-Route::get('/login', fn () => redirect()->route('driver.login'))->name('login');
+
+
+Route::get('/login', function () {
+    return redirect()->route('driver.login');
+})->name('login');
+
 
 Route::prefix('driver')->group(function () {
-
     Route::get('/register', [DriverAuthController::class, 'showRegisterForm'])->name('driver.register');
     Route::post('/register', [DriverAuthController::class, 'register']);
     Route::get('/login', [DriverAuthController::class, 'showLoginForm'])->name('driver.login');
-    Route::post('/login', [DriverAuthController::class, 'login']);
+Route::post('/login', [DriverAuthController::class, 'login'])->name('driver.login.submit');
+
 
     Route::middleware('auth:driver')->group(function () {
         Route::get('/dashboard', function () {
@@ -47,7 +51,7 @@ Route::prefix('driver')->group(function () {
 
 
     Route::post('/save-token', [DriverAuthController::class, 'saveToken']);
-});
+
 
 // 🔐 Authenticated driver-only routes
 
@@ -156,3 +160,19 @@ Route::middleware(['client'])->prefix('client')->group(function () {
     Route::get('/orders', [ClientDeliveryController::class, 'index'])->name('client.orders.index');
 
 });
+//Route::get('/chat/{orderId}', [MessageController::class, 'index'])->name('chat.index');
+//Route::post('/chat/send', [MessageController::class, 'send'])->name('chat.send');
+
+
+// Client chat routes
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('/client/chat/{orderId}', [MessageController::class, 'index'])->name('client.chat');
+    Route::post('/client/chat/send', [MessageController::class, 'store'])->name('client.chat.send');
+});
+
+// Driver chat routes
+Route::middleware(['auth:driver'])->group(function () {
+    Route::get('/driver/chat/{orderId}', [MessageController::class, 'index'])->name('driver.chat');
+    Route::post('/driver/chat/send', [MessageController::class, 'store'])->name('driver.chat.send');
+});
+

@@ -52,7 +52,11 @@ $request->validate([
 
 
         $driverId = $driver?->id;
+
+
+
     }
+
        // ✅ PRICE CALCULATION LOGIC HERE
     $driver = Driver::find($driverId);
     $calculatedPrice = 10000; // base
@@ -96,7 +100,7 @@ if (!$order || !$order->id) {
 ]);
 
 
-    return redirect()->route('client.orders.index')->with('success', 'Delivery & order created!');
+return redirect()->route('client.orders.index', ['orderId' => $order->id]);
 
 }
 }

@@ -28,6 +28,6 @@
     <div class="container mx-auto mt-8 p-6 bg-white rounded shadow">
         @yield('content')
     </div>
-
+@stack('scripts')
 </body>
 </html>

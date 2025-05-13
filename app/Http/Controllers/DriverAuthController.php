@@ -28,7 +28,7 @@ class DriverAuthController extends Controller
     'fcm_token' => 'nullable|string'
 ]);
 
-    
+
         $driver = Driver::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -41,26 +41,47 @@ class DriverAuthController extends Controller
             'scheduled_at' => $request->scheduled_at,
             'fcm_token' => $request->fcm_token,
         ]);
-    
+
         return redirect()->route('driver.login')->with('success', 'Registration successful. Please log in.');
 
     }
-    
+
     public function showLoginForm()
     {
         return view('drivers.login');
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
+{
+    $credentials = $request->only('email', 'password');
 
-        if (Auth::guard('driver')->attempt($credentials)) {
-            return redirect()->route('driver.dashboard');
+    // Attempt login
+    if (Auth::guard('driver')->attempt($credentials)) {
+        $driver = Auth::guard('driver')->user();
+
+        // ❌ Block based on status
+        if ($driver->status === 'pending') {
+            Auth::guard('driver')->logout();
+            return back()->withErrors(['email' => 'Your account is pending approval. Please wait for admin.']);
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        if ($driver->status === 'suspended') {
+            Auth::guard('driver')->logout();
+            return back()->withErrors(['email' => 'Your account is suspended. Contact support.']);
+        }
+
+        if ($driver->status === 'blocked') {
+            Auth::guard('driver')->logout();
+            return back()->withErrors(['email' => 'Your account is blocked. Access denied.']);
+        }
+
+        // ✅ Approved
+        return redirect()->route('driver.dashboard');
     }
+
+    return back()->withErrors(['email' => 'Invalid credentials']);
+}
+
 
     public function logout()
     {

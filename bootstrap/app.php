@@ -14,20 +14,20 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
     $middleware->alias([
         'adminpanel' => \App\Http\Middleware\AdminAuthMiddleware::class,
+
         'checkadmin' => \App\Http\Middleware\CheckAdminLoginMiddleware::class,
         'client' => \App\Http\Middleware\ClientMiddleware::class,
+
+        'checkadmin' => \App\Http\Middleware\CheckAdminLoginMiddleware::class,
 
     ]);
 })
 
-    ->withExceptions(function (Exceptions $exceptions) {
-        // Exception handling if needed
-        // You can register global middleware here
-    })
+
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('driver/*')) {
-                abort(403, 'Unauthorized access – Please log in as a driver.');
+                abort(401, 'Unauthorized access');
             }
 
             // Default behavior for non-driver routes
