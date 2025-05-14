@@ -30,6 +30,8 @@ class MessageController extends Controller
     // Fetch messages related to the delivery
     $messages = Message::where('delivery_id', $deliveryId)->latest()->get();
 
+
+
     // Pass the delivery object to the view as well
     return view('client.chat.index', [
         'messages' => $messages,
@@ -45,15 +47,14 @@ class MessageController extends Controller
             'message' => 'required|string|max:1000',
         ]);
 
-        if (Auth::guard('driver')->check()) {
-            $senderType = 'driver';
-            $senderId = Auth::guard('driver')->id();
-        } elseif (Auth::guard('web')->check()) {
-            $senderType = 'client';
-            $senderId = Auth::id();
-        } else {
-            abort(403, 'Unauthorized sender.');
-        }
+      if (Auth::guard('driver')->check()) {
+    $senderType = \App\Models\Driver::class;
+    $senderId = Auth::guard('driver')->id();
+} elseif (Auth::guard('web')->check()) {
+    $senderType = \App\Models\User::class;
+    $senderId = Auth::id();
+}
+
 
         Message::create([
             'delivery_id' => $request->delivery_id,

@@ -79,6 +79,6 @@ class ClientDeliveryController extends Controller
             'price'             => $calculatedPrice,
         ]);
 
-        return redirect()->route('client.orders.index')->with('success', 'Delivery request created.');
+        return redirect()->route('orders.index')->with('success', 'Delivery request created.');
     }
 }

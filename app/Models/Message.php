@@ -15,12 +15,10 @@ public function delivery()
 }
 
 
-    public function sender()
+public function sender()
 {
-    if ($this->sender_type === 'driver') {
-        return $this->belongsTo(\App\Models\Driver::class, 'sender_id');
-    }
-    return $this->belongsTo(\App\Models\User::class, 'sender_id');
+    return $this->morphTo(null, 'sender_type', 'sender_id');
 }
+
 
 }

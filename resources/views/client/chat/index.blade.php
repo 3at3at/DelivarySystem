@@ -11,25 +11,31 @@
     <h2 class="text-2xl font-bold mb-4">💬 Live Chat </h2>
 
     <div class="bg-gray-100 p-4 h-80 overflow-y-scroll rounded mb-4">
-      @forelse ($messages->reverse() as $msg)
+   @foreach ($messages->reverse() as $msg)
     @php
-        $isCurrentUser = $msg->sender_type === $currentUserType && $msg->sender_id === $currentUserId;
+        $isCurrentUser = (
+            (Auth::guard('web')->check() && $msg->sender_type === \App\Models\User::class && $msg->sender_id === Auth::id()) ||
+            (Auth::guard('driver')->check() && $msg->sender_type === \App\Models\Driver::class && $msg->sender_id === Auth::guard('driver')->id())
+        );
+
         $alignment = $isCurrentUser ? 'text-right' : 'text-left';
-        $bubbleColor = $msg->sender_type === 'driver' ? 'bg-blue-200' : 'bg-green-200';
+        $bubbleColor = $isCurrentUser ? 'bg-blue-200' : 'bg-green-200';
+        $displayType = class_basename($msg->sender_type); // "User" or "Driver"
     @endphp
 
     <div class="{{ $alignment }} mb-3">
         <div class="inline-block p-3 rounded-lg {{ $bubbleColor }}">
-            <p class="text-sm font-semibold">{{ ucfirst($msg->sender_type) }}: {{ $msg->sender?->name ?? 'Unknown' }}</p>
+            <p class="text-sm font-semibold">
+                {{ $displayType === 'User' ? 'Client' : 'Driver' }}: {{ $msg->sender?->name ?? 'Unknown' }}
+            </p>
             <p>{{ $msg->message }}</p>
             <p class="text-xs text-gray-600">{{ $msg->created_at->diffForHumans() }}</p>
         </div>
     </div>
-@empty
-    <p class="text-gray-500">No messages yet.</p>
-@endforelse
+@endforeach
 
-    </div>
+
+
 
    <form method="POST" action="{{ $isDriver ? route('driver.chat.send') : route('client.chat.send') }}">
     @csrf
