@@ -34,11 +34,14 @@
             <label class="block">Address</label>
             <input type="text" name="address" value="{{ old('address') }}" class="w-full border px-3 py-2 rounded">
         </div>
-
-        <div class="mb-4">
-            <label class="block">Preferred Currency</label>
-            <input type="text" name="preferred_currency" value="{{ old('preferred_currency') }}" class="w-full border px-3 py-2 rounded">
-        </div>
+<div class="mb-3">
+    <label>Preferred Currency</label>
+    <select name="preferred_currency" class="form-control">
+        <option value="USD">$ USD</option>
+        <option value="EUR">€ EUR</option>
+        <option value="LBP">ل.ل LBP</option>
+    </select>
+</div>
 
         <div class="mb-4">
             <label class="block">Password</label>

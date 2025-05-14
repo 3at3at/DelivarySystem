@@ -24,6 +24,7 @@ class DriverAuthController extends Controller
     'vehicle_type' => 'required',
     'plate_number' => 'required',
     'pricing_model' => 'required|in:fixed,per_km',
+     'location' => 'required|string|max:100',
     'price' => 'required|numeric',
     'fcm_token' => 'nullable|string'
 ]);
@@ -37,6 +38,7 @@ class DriverAuthController extends Controller
             'vehicle_type' => $request->vehicle_type,
             'plate_number' => $request->plate_number,
             'pricing_model' => $request->pricing_model,
+             'location' => $request->location,
             'price' => $request->price,
             'scheduled_at' => $request->scheduled_at,
             'fcm_token' => $request->fcm_token,

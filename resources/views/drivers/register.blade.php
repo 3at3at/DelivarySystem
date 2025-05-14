@@ -81,6 +81,10 @@
                         <option value="per_km">Per Kilometer</option>
                     </select>
                 </div>
+<div class="mb-3">
+    <label>Location (City/Area)</label>
+    <input type="text" name="location" class="form-control required-field">
+</div>
 
                 <div class="mb-3">
                     <label>Price</label>

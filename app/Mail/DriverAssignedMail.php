@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Delivery;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -13,7 +14,7 @@ class DriverAssignedMail extends Mailable
 
     public $order;
 
-    public function __construct(Order $order)
+    public function __construct(Delivery $order)
     {
         $this->order = $order;
     }

@@ -36,7 +36,7 @@ return [
     */
 
     'guards' => [
-    'users' => [
+    'web' => [
         'driver' => 'session',
         'provider' => 'users',
     ],

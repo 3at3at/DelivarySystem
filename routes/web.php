@@ -111,3 +111,6 @@ Route::middleware(['auth:driver'])->group(function () {
     Route::get('/driver/chat/{deliveryId}', [MessageController::class, 'index'])->name('driver.chat');
     Route::post('/driver/chat/send', [MessageController::class, 'store'])->name('driver.chat.send');
 });
+
+Route::get('/client/calendar', [ClientDeliveryController::class, 'calendar'])->name('client.calendar');
+

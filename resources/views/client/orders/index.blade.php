@@ -12,10 +12,22 @@
             <th class="p-3 text-left">Status</th>
             <th class="p-3 text-left">Driver</th>
             <th class="p-3 text-left">Created At</th>
+            <th class="p-3 text-left">Price</th>
+            <th class="p-3 text-left">Payment</th>
+
         </tr>
     </thead>
     <tbody>
-        @foreach ($deliveries as $delivery) <!-- Use $delivery instead of $order -->
+        @foreach ($deliveries as $delivery)
+         <!-- Use $delivery instead of $order -->
+            @php
+            $symbol = match($delivery->currency) {
+                'USD' => '$',
+                'EUR' => '€',
+                'LBP' => 'ل.ل',
+                default => '',
+            };
+        @endphp
         <tr class="border-t hover:bg-gray-50">
             <td class="p-3">{{ $delivery->pickup_location ?? '-' }}</td>
             <td class="p-3">{{ $delivery->dropoff_location ?? '-' }}</td>
@@ -35,6 +47,19 @@
             </td>
 
             <td class="p-3">{{ $delivery->created_at->format('Y-m-d H:i') }}</td>
+ <td class="p-3">
+                {{ $symbol }}{{ number_format($delivery->converted_price, 2) }}
+                <span class="text-xs text-gray-500">({{ $delivery->currency }})</span>
+            </td>
+            <td class="p-3">
+    {{ strtoupper($delivery->payment_method) }}
+    <br>
+    @if ($delivery->is_paid)
+        <span class="text-green-600 font-bold">Paid</span>
+    @else
+        <span class="text-red-600 font-bold">Unpaid</span>
+    @endif
+</td>
 
             <td>
                 @if ($delivery->driver_id) <!-- Check if the driver_id exists -->

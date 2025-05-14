@@ -15,10 +15,18 @@ class Delivery extends Model
     'package_type',
     'package_weight',
     'package_dimensions',
+    'scheduled_at',
     'urgency',
     'status',
     'price',
+     'converted_price',
+    'currency',
+     'payment_method', 'is_paid',
 
+];
+protected $casts = [
+    'converted_price' => 'float',
+    'price' => 'float',
 ];
 
 

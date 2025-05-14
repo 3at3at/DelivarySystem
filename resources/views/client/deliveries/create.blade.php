@@ -30,6 +30,15 @@
         <option value="normal">Normal</option>
         <option value="urgent">Urgent</option>
     </select>
+<label>Scheduled Time</label>
+<input type="datetime-local" name="scheduled_at" class="form-control" required>
+<label>Payment Method</label>
+<select name="payment_method" class="form-select mb-3" required>
+    <option value="cod">Cash on Delivery</option>
+    <option value="stripe">Credit/Debit Card (Stripe)</option>
+    <option value="paypal">PayPal</option>
+    <option value="coinbase">Crypto (Coinbase)</option>
+</select>
 
     <select name="driver_id" class="w-full border p-2 rounded mb-3">
         <option value="">Auto-Assign Driver</option>
