@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    protected $fillable = ['order_id', 'sender_id', 'sender_type', 'message'];
+    protected $fillable = ['sender_id', 'sender_type', 'message','delivery_id'];
 
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
+   // Message model (App\Models\Message)
+public function delivery()
+{
+    return $this->belongsTo(Delivery::class);
+}
+
 
     public function sender()
 {

@@ -67,7 +67,7 @@
             <!-- Dashboard Buttons -->
             <div class="row mt-4">
                 <div class="col-md-3 mb-3">
-                    <a href="{{ route('admin.orders') }}" class="btn btn-primary dashboard-btn btn-block py-3">Orders</a>
+                    <a href="{{ route('admin.deliveries') }}" class="btn btn-primary dashboard-btn btn-block py-3">Orders</a>
                 </div>
                 <div class="col-md-3 mb-3">
                     <a href="{{ route('admin.drivers') }}" class="btn btn-info dashboard-btn btn-block py-3">Drivers</a>
@@ -95,10 +95,10 @@
                 <div class="col-md-6 mb-3">
                     <div class="card card-custom">
                         <div class="card-custom-header">
-                            <h4>Pending Orders</h4>
+                            <h4>Pending Deliveries</h4>
                         </div>
                         <div class="card-custom-body">
-                            <p>Total pending orders: {{ $pendingOrders }}</p>
+                            <p>Total pending deliveries: {{ $pendingDeliveries }}</p>
                         </div>
                     </div>
                 </div>

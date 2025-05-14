@@ -61,30 +61,47 @@ class DriverDeliveryController extends Controller
         return view('drivers.calendar', ['events' => $events]);
     }
 
-    public function accept($id)
-    {
-        $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())
-            ->where('is_available', true)
-            ->findOrFail($id);
 
-        $delivery->status = 'in_progress';
-        $delivery->driver_status = 'accepted';
-        $delivery->save();
+public function accept($id)
+{
+    $driver = Auth::guard('driver')->user();
 
-        return back()->with('success', 'Delivery accepted!');
+    // Make sure the driver is available
+    if (!$driver->is_available) {
+        return back()->with('error', 'You are currently unavailable to accept deliveries.');
     }
 
-    public function reject($id)
-    {
-        $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())
-            ->where('is_available', true)
-            ->findOrFail($id);
+    // Find the delivery assigned to this driver
+    $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
 
-        $delivery->driver_status = 'rejected';
-        $delivery->status = 'pending';
-        $delivery->driver_id = null;
-        $delivery->save();
+    // Update delivery status
+    $delivery->status = 'In Progress';
+    $delivery->driver_status = 'accepted';
+    $delivery->save();
 
-        return back()->with('success', 'Delivery rejected.');
+    return back()->with('success', 'Delivery accepted!');
+}
+
+
+   public function reject($id)
+{
+    $driver = Auth::guard('driver')->user();
+
+    // Check if the driver is available before proceeding
+    if (!$driver->is_available) {
+        return back()->with('error', 'You are currently not available to reject deliveries.');
     }
+
+    // Find the delivery assigned to this driver
+    $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
+
+    // Update delivery status and remove assignment
+    $delivery->driver_status = 'rejected';
+    $delivery->status = 'Pending';
+    $delivery->driver_id = null;
+    $delivery->save();
+
+    return back()->with('success', 'Delivery rejected.');
+}
+
 }

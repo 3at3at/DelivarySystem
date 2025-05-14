@@ -31,10 +31,21 @@ class Delivery extends Model
 {
     return $this->belongsTo(\App\Models\User::class, 'client_id');
 }
-public function order()
+
+public function messages()
 {
-    return $this->belongsTo(Order::class);
+    return $this->hasMany(Message::class);
 }
+
+public function review()
+{
+    return $this->hasOne(Review::class);
+}
+public function delivery()
+{
+    return $this->belongsTo(Delivery::class);
+}
+
 
 }
 

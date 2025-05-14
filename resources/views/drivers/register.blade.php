@@ -15,6 +15,13 @@
     </style>
 </head>
 <body class="bg-light">
+
+   <nav class="bg-white shadow p-4 flex justify-between items-center">
+        <div class="text-xl font-bold text-blue-600">
+            🚚 SpeedGo Delivery
+        </div>
+    </nav>
+
 <div class="container mt-5">
     <div class="card shadow-lg">
         <div class="card-header bg-primary text-white">

@@ -13,7 +13,7 @@ return new class extends Migration
 {
     Schema::create('messages', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('order_id')->constrained()->onDelete('cascade');
+      //  $table->foreignId('order_id')->constrained()->onDelete('cascade');
         $table->foreignId('sender_id');
         $table->enum('sender_type', ['client', 'driver']);
         $table->text('message');

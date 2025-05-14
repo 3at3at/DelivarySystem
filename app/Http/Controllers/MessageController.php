@@ -4,67 +4,64 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Message;
-use App\Models\Order;
+use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
+
 class MessageController extends Controller
 {
-public function index($orderId)
+   public function index($deliveryId)
 {
-    $order = Order::with('delivery')->findOrFail($orderId);
+    // Fetch the delivery along with the client and driver
+    $delivery = Delivery::with('client', 'driver')->findOrFail($deliveryId);
 
-    // ✅ Fix: Separate guard checks to avoid OR bug
+    // Check if the current authenticated user is allowed to access the chat
     if (Auth::guard('web')->check()) {
-        if ($order->client_id !== Auth::id()) {
+        if ($delivery->client_id !== Auth::id()) {
             abort(403, 'Unauthorized access to this chat.');
         }
     } elseif (Auth::guard('driver')->check()) {
-        if (!$order->delivery || $order->delivery->driver_id !== Auth::guard('driver')->id()) {
+        if ($delivery->driver_id !== Auth::guard('driver')->id()) {
             abort(403, 'Unauthorized access to this chat.');
         }
     } else {
-        // No one logged in
         abort(403, 'You must be logged in.');
     }
 
-    $messages = Message::where('order_id', $orderId)->latest()->get();
+    // Fetch messages related to the delivery
+    $messages = Message::where('delivery_id', $deliveryId)->latest()->get();
 
+    // Pass the delivery object to the view as well
     return view('client.chat.index', [
         'messages' => $messages,
-        'orderId' => $orderId,
+        'delivery' => $delivery, // Add the delivery object here
     ]);
 }
 
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'delivery_id' => 'required|exists:deliveries,id',
+            'message' => 'required|string|max:1000',
+        ]);
 
+        if (Auth::guard('driver')->check()) {
+            $senderType = 'driver';
+            $senderId = Auth::guard('driver')->id();
+        } elseif (Auth::guard('web')->check()) {
+            $senderType = 'client';
+            $senderId = Auth::id();
+        } else {
+            abort(403, 'Unauthorized sender.');
+        }
 
+        Message::create([
+            'delivery_id' => $request->delivery_id,
+            'sender_id' => $senderId,
+            'sender_type' => $senderType,
+            'message' => $request->message,
+        ]);
 
-
-public function store(Request $request)
-{
-    $request->validate([
-        'order_id' => 'required|exists:orders,id',
-        'message' => 'required|string|max:1000',
-    ]);
-
-    if (Auth::guard('driver')->check()) {
-        $senderType = 'driver';
-        $senderId = Auth::guard('driver')->id();
-    } elseif (Auth::guard('web')->check()) {
-        $senderType = 'client';
-        $senderId = Auth::id();
-    } else {
-        abort(403, 'Unauthorized sender.');
+        return back();
     }
-
-    Message::create([
-        'order_id' => $request->order_id,
-        'sender_id' => $senderId,
-        'sender_type' => $senderType,
-        'message' => $request->message,
-    ]);
-
-    return back();
-}
-
-
 }

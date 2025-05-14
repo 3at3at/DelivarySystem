@@ -8,8 +8,9 @@
         @csrf
 
         {{-- Hidden inputs --}}
-        <input type="hidden" name="order_id" value="{{ $order->id }}">
-        <input type="hidden" name="driver_id" value="{{ $order->delivery->driver_id }}">
+        <input type="hidden" name="delivery_id" value="{{ $delivery->id }}">
+        <input type="hidden" name="driver_id" value="{{ $delivery->driver_id }}">
+
 
         {{-- ⭐ Star Rating --}}
         <div class="mb-4">

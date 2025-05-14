@@ -32,12 +32,12 @@
     </div>
 
    <form method="POST" action="{{ $isDriver ? route('driver.chat.send') : route('client.chat.send') }}">
+    @csrf
+    <input type="hidden" name="delivery_id" value="{{ $delivery->id }}">  <!-- Change from order_id to delivery_id -->
+    <textarea name="message" rows="3" class="w-full p-2 border rounded mb-3" placeholder="Type your message..." required></textarea>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700">Send</button>
+</form>
 
-        @csrf
-        <input type="hidden" name="order_id" value="{{ $orderId }}">
-        <textarea name="message" rows="3" class="w-full p-2 border rounded mb-3" placeholder="Type your message..." required></textarea>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700">Send</button>
-    </form>
 </div>
 @endsection
 

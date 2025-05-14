@@ -6,6 +6,12 @@
 </head>
 <body class="bg-light">
 
+   <nav class="bg-white shadow p-4 flex justify-between items-center">
+        <div class="text-xl font-bold text-blue-600">
+            🚚 SpeedGo Delivery
+        </div>
+    </nav>
+
 <div class="container py-5">
     <h2 class="text-center mb-4">Admin Login</h2>
 
