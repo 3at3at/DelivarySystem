@@ -21,7 +21,7 @@ class Delivery extends Model
     'price',
      'converted_price',
     'currency',
-     'payment_method', 'is_paid',
+     'payment_method', 'is_paid','distance_km'
 
 ];
 protected $casts = [

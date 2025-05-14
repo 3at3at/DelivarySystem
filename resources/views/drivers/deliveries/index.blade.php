@@ -6,6 +6,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
+
+
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0"><i class="fas fa-truck"></i> Your Assigned Deliveries</h5>

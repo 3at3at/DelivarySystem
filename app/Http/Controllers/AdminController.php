@@ -74,66 +74,87 @@ class AdminController extends Controller
 }
 
 
-    public function assignDriver(Request $request, $id)
-    {
-        $request->validate([
-            'driver_id' => 'required|exists:drivers,id',
-        ]);
+   public function assignDriver(Request $request, $id)
+{
+    $request->validate([
+        'driver_id' => 'required|exists:drivers,id',
+    ]);
 
-        $delivery = Delivery::findOrFail($id);
-        $driver = Driver::findOrFail($request->driver_id);
+    $delivery = Delivery::findOrFail($id);
+    $driver = Driver::findOrFail($request->driver_id);
 
-        // 1. Check availability
-        if (!$driver->is_available) {
-            return back()->with('error', 'Driver is marked as unavailable.');
-        }
-
-        // 2. Check for conflict
-        $conflict = Delivery::where('driver_id', $driver->id)
-            ->where('scheduled_at', $delivery->scheduled_at)
-            ->exists();
-
-        if ($conflict) {
-            return back()->with('error', 'Driver already has a delivery at this time.');
-        }
-
-        // 3. Check working hours
-        if ($driver->working_hours) {
-            $deliveryTime = Carbon::parse($delivery->scheduled_at)->format('H:i');
-            $deliveryDay = Carbon::parse($delivery->scheduled_at)->format('l');
-
-            $scheduleLines = explode("\n", $driver->working_hours);
-            $workingMap = collect($scheduleLines)->mapWithKeys(function ($line) {
-                [$day, $range] = explode(':', $line);
-                return [trim($day) => trim($range)];
-            });
-
-            if (!isset($workingMap[$deliveryDay])) {
-                return back()->with('error', "Driver doesn't work on {$deliveryDay}.");
-            }
-
-            [$startTime, $endTime] = explode('-', $workingMap[$deliveryDay]);
-            $start = Carbon::parse($startTime)->format('H:i');
-            $end = Carbon::parse($endTime)->format('H:i');
-
-            if ($deliveryTime < $start || $deliveryTime > $end) {
-                return back()->with('error', "Driver is not working at {$deliveryTime}.");
-            }
-        }
-
-        // ✅ Assign
-        $delivery->driver_id = $driver->id;
-        $delivery->status = 'Accepted';
-        $delivery->driver_status = 'pending';
-        $delivery->save();
-
-        // ✅ Notify driver
-        if ($driver->email) {
-            Mail::to($driver->email)->send(new DriverAssignedMail($delivery));
-        }
-
-        return back()->with('success', 'Driver assigned and notified!');
+    // 1. Check availability
+    if (!$driver->is_available) {
+        return back()->with('error', 'Driver is marked as unavailable.');
     }
+
+    // 2. Check if driver already has an active delivery
+    $hasActiveDelivery = Delivery::where('driver_id', $driver->id)
+        ->whereIn('status', ['Accepted', 'In Progress'])
+        ->exists();
+
+    if ($hasActiveDelivery) {
+        return back()->with('error', 'Driver already has an active delivery.');
+    }
+
+    // 3. Check for conflict at the same time
+    $conflict = Delivery::where('driver_id', $driver->id)
+        ->where('scheduled_at', $delivery->scheduled_at)
+        ->exists();
+
+    if ($conflict) {
+        return back()->with('error', 'Driver already has a delivery at this time.');
+    }
+
+    // 4. Check working hours
+    if ($driver->working_hours && $delivery->scheduled_at) {
+        $deliveryTime = Carbon::parse($delivery->scheduled_at)->format('H:i');
+        $deliveryDay = Carbon::parse($delivery->scheduled_at)->format('l');
+
+        $scheduleLines = explode("\n", $driver->working_hours);
+        $workingMap = collect($scheduleLines)->mapWithKeys(function ($line) {
+            [$day, $range] = array_pad(explode(':', $line, 2), 2, '');
+            return [trim($day) => trim($range)];
+        });
+
+        if (!isset($workingMap[$deliveryDay]) || empty($workingMap[$deliveryDay])) {
+            return back()->with('error', "Driver doesn't work on {$deliveryDay}.");
+        }
+
+        $range = $workingMap[$deliveryDay];
+
+        if (!str_contains($range, '-')) {
+            return back()->with('error', "Driver's working hours for {$deliveryDay} are not properly set.");
+        }
+
+        [$startTime, $endTime] = array_map('trim', explode('-', $range));
+
+        if (!$startTime || !$endTime) {
+            return back()->with('error', "Incomplete working hours for {$deliveryDay}.");
+        }
+
+        $start = Carbon::parse($startTime)->format('H:i');
+        $end = Carbon::parse($endTime)->format('H:i');
+
+        if ($deliveryTime < $start || $deliveryTime > $end) {
+            return back()->with('error', "Driver is not working at {$deliveryTime} on {$deliveryDay}.");
+        }
+    }
+
+    // ✅ Assign delivery
+    $delivery->driver_id = $driver->id;
+    $delivery->status = 'Pending';          // keep status pending until accepted
+    $delivery->driver_status = 'pending';   // driver must accept it
+    $delivery->save();
+
+    // ✅ Notify driver
+    if ($driver->email) {
+        Mail::to($driver->email)->send(new DriverAssignedMail($delivery));
+    }
+
+    return back()->with('success', 'Driver assigned and notified!');
+}
+
 
     public function searchDrivers(Request $request)
     {

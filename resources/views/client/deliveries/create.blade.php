@@ -12,42 +12,39 @@
     </div>
 @endif
 
-
 <form method="POST" action="{{ route('client.deliveries.store') }}">
     @csrf
 
     <input type="text" name="pickup_location" placeholder="Pickup Location" class="w-full border p-2 rounded mb-3" required>
     <input type="text" name="dropoff_location" placeholder="Dropoff Location" class="w-full border p-2 rounded mb-3" required>
-   <input type="text" name="package_type" placeholder="Package Type (e.g., Box, Envelope)" class="w-full border p-2 rounded mb-3" required>
-
-<input type="number" step="0.1" name="package_weight" placeholder="Package Weight in kg" class="w-full border p-2 rounded mb-3" required>
-
-<input type="text" name="package_dimensions" placeholder="Dimensions (LxWxH)" class="w-full border p-2 rounded mb-3">
-
+    <input type="text" name="package_type" placeholder="Package Type (e.g., Box, Envelope)" class="w-full border p-2 rounded mb-3" required>
+    <input type="number" step="0.1" name="package_weight" placeholder="Package Weight in kg" class="w-full border p-2 rounded mb-3" required>
+    <input type="text" name="package_dimensions" placeholder="Dimensions (LxWxH)" class="w-full border p-2 rounded mb-3">
 
 
     <select name="urgency" class="w-full border p-2 rounded mb-3" required>
         <option value="normal">Normal</option>
         <option value="urgent">Urgent</option>
     </select>
-<label>Scheduled Time</label>
-<input type="datetime-local" name="scheduled_at" class="form-control" required>
-<label>Payment Method</label>
-<select name="payment_method" class="form-select mb-3" required>
-    <option value="cod">Cash on Delivery</option>
-    <option value="stripe">Credit/Debit Card (Stripe)</option>
-    <option value="paypal">PayPal</option>
-    <option value="coinbase">Crypto (Coinbase)</option>
-</select>
+
+    <label>Scheduled Time</label>
+    <input type="datetime-local" name="scheduled_at" class="form-control mb-3" required>
+
+    <label>Payment Method</label>
+    <select name="payment_method" class="form-select mb-3" required>
+        <option value="cod">Cash on Delivery</option>
+        <option value="stripe">Credit/Debit Card (Stripe)</option>
+        <option value="paypal">PayPal</option>
+        <option value="coinbase">Crypto (Coinbase)</option>
+    </select>
 
     <select name="driver_id" class="w-full border p-2 rounded mb-3">
         <option value="">Auto-Assign Driver</option>
         @foreach ($drivers as $driver)
-           <option value="{{ $driver->id }}"
-    {{ isset($selectedDriver) && $selectedDriver == $driver->id ? 'selected' : '' }}>
-    {{ $driver->name }}
-</option>
-
+            <option value="{{ $driver->id }}"
+                {{ isset($selectedDriver) && $selectedDriver == $driver->id ? 'selected' : '' }}>
+                {{ $driver->name }}
+            </option>
         @endforeach
     </select>
 

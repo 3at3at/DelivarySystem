@@ -52,20 +52,23 @@
                     <td>{{ $delivery->id }}</td>
                     <td>{{ $delivery->client->name ?? 'N/A' }}</td>
                     <td>
-                        @if ($delivery->driver && $delivery->driver_status !== 'rejected')
-                            {{ $delivery->driver->name }}
-                        @elseif ($delivery->driver_status === 'rejected' && $delivery->status !== 'Delivered')
-                            <form action="{{ route('admin.deliveries.assign', $delivery->id) }}" method="POST" class="d-flex gap-2 align-items-center">
-                                @csrf
-                                <select name="driver_id" class="form-select form-select-sm driver-search" style="width: 200px;">
-                                    <option value="">Search available driver...</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-warning">Reassign</button>
-                            </form>
-                        @else
-                            <span class="text-muted">No driver</span>
-                        @endif
-                    </td>
+    @if ($delivery->driver && $delivery->driver_status !== 'rejected')
+        {{ $delivery->driver->name }}
+    @elseif (is_null($delivery->driver_id) || $delivery->driver_status === 'rejected')
+        <form action="{{ route('admin.deliveries.assign', $delivery->id) }}" method="POST" class="d-flex gap-2 align-items-center">
+            @csrf
+            <select name="driver_id" class="form-select form-select-sm driver-search" style="width: 200px;">
+                <option value="">Search available driver...</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-{{ $delivery->driver_status === 'rejected' ? 'warning' : 'primary' }}">
+                {{ $delivery->driver_status === 'rejected' ? 'Reassign' : 'Assign' }}
+            </button>
+        </form>
+    @else
+        <span class="text-muted">No driver</span>
+    @endif
+</td>
+
                     <td>{{ $delivery->pickup_location }}</td>
                     <td>{{ $delivery->dropoff_location }}</td>
                     <td>

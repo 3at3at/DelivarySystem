@@ -36,7 +36,7 @@ class ClientAuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('client.dashboard');
+        return redirect()->route('client.login');
     }
 
     public function showLoginForm()

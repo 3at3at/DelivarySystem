@@ -103,7 +103,7 @@ $conversionRate = $exchangeRates[$preferredCurrency] ?? 1;
 $calculatedPrice = $calculatedPrice > 0 ? $calculatedPrice : 10000; // fallback safety
 $convertedPrice = round($calculatedPrice * $conversionRate, 6);
 
-
+$distanceKm = $this->estimateDistance($request->pickup_location, $request->dropoff_location);
     // Save delivery even if driver is not assigned
     Delivery::create([
         'client_id'          => Auth::id(),
@@ -115,6 +115,7 @@ $convertedPrice = round($calculatedPrice * $conversionRate, 6);
         'package_dimensions' => $request->package_dimensions,
         'urgency'            => $request->urgency,
         'scheduled_at'       => $scheduledAt,
+        'delivery_km'        => $distanceKm, 
         'status'             => 'Pending',
      // Save real price in LBP
     'price'              => $calculatedPrice,
@@ -151,5 +152,16 @@ $convertedPrice = round($calculatedPrice * $conversionRate, 6);
     return view('client.calendar', ['events' => $events]);
 }
 
+private function estimateDistance($pickup, $dropoff): float
+{
+    // Very basic heuristic: count differing characters between locations
+    similar_text(strtolower($pickup), strtolower($dropoff), $percent);
+    
+    // The less similar the names, the longer the distance
+    $distance = 100 - $percent;
+
+    // Convert that difference percentage into a fake km value
+    return round(max($distance / 5, 1), 2); // Minimum 1 km, max ~20 km
+}
 
 }

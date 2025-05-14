@@ -17,34 +17,42 @@ class DriverDeliveryController extends Controller
     }
 
     public function updateStatus(Request $request, $id)
-    {
-        $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())->findOrFail($id);
-        $delivery->status = $request->status;
-        $delivery->save();
+{
+    $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())->findOrFail($id);
+    $delivery->status = $request->status;
+    $delivery->save();
 
-        // ✅ Loyalty Program on Delivery Completion
-        if ($request->status === 'Delivered') {
-            $loyalty = LoyaltySetting::first();
-            $client = $delivery->client;
+    // ✅ Loyalty Program on Delivery Completion
+    if ($request->status === 'Delivered') {
+        $loyalty = LoyaltySetting::first();
+        $client = $delivery->client;
 
-            if ($client && $loyalty) {
-                $km = $delivery->distance_km ?? 0; // Make sure this column exists
-                $earnedPoints = $km * $loyalty->points_per_km;
+        if ($client && $loyalty) {
+            $km = $delivery->distance_km ?? 0; // Make sure this column exists
+            $earnedPoints = $km * $loyalty->points_per_km;
 
-                $client->points += $earnedPoints;
+            // 👉 Dump values to check what’s happening
+            dd([
+                'distance_km' => $km,
+                'points_per_km' => $loyalty->points_per_km,
+                'earned_points' => $earnedPoints,
+                'client_points_before' => $client->points,
+            ]);
 
-                if ($client->points >= $loyalty->bonus_threshold) {
-                    // You could apply reward (like discount logic) here
-                    session()->flash('bonus_earned', '🎉 Client earned a loyalty reward!');
-                    $client->points = 0; // reset points after reward
-                }
+            $client->points += $earnedPoints;
 
-                $client->save();
+            if ($client->points >= $loyalty->bonus_threshold) {
+                session()->flash('bonus_earned', '🎉 Client earned a loyalty reward!');
+                $client->points = 0; // reset points after reward
             }
-        }
 
-        return back()->with('success', 'Delivery status updated.');
+            $client->save();
+        }
     }
+
+    return back()->with('success', 'Delivery status updated.');
+}
+
 
     public function calendar()
     {
@@ -64,23 +72,30 @@ class DriverDeliveryController extends Controller
 
 public function accept($id)
 {
-    $driver = Auth::guard('driver')->user();
+    $driverId = Auth::guard('driver')->id();
 
-    // Make sure the driver is available
-    if (!$driver->is_available) {
-        return back()->with('error', 'You are currently unavailable to accept deliveries.');
+    // Check if the driver already has an active delivery
+    $hasActive = \App\Models\Delivery::where('driver_id', $driverId)
+        ->where('driver_status', 'accepted')
+        ->where('status', 'In Progress')
+        ->exists();
+
+    if ($hasActive) {
+        return back()->with('error', '🚫 You already have a delivery in progress. Complete it before accepting a new one.');
     }
 
-    // Find the delivery assigned to this driver
-    $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
+    $delivery = \App\Models\Delivery::where('driver_id', $driverId)
+        ->where('id', $id)
+        ->where('driver_status', 'pending')
+        ->firstOrFail();
 
-    // Update delivery status
-    $delivery->status = 'In Progress';
     $delivery->driver_status = 'accepted';
+    $delivery->status = 'In Progress';
     $delivery->save();
 
-    return back()->with('success', 'Delivery accepted!');
+    return back()->with('success', '✅ Delivery accepted and marked as In Progress.');
 }
+
 
 
    public function reject($id)

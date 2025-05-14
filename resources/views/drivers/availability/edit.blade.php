@@ -38,12 +38,19 @@
             </div>
 
             <div class="mb-3">
-                <label for="is_available" class="form-label">Available?</label>
-                <select name="is_available" class="form-select">
-                    <option value="1" {{ auth()->guard('driver')->user()->is_available ? 'selected' : '' }}>Yes</option>
-                    <option value="0" {{ !auth()->guard('driver')->user()->is_available ? 'selected' : '' }}>No</option>
-                </select>
-            </div>
+    <label class="form-label d-block">Availability</label>
+
+    <div class="btn-group" role="group" aria-label="Availability Toggle">
+        <input type="radio" class="btn-check" name="is_available" id="availableOnline" value="1" autocomplete="off"
+            {{ auth()->guard('driver')->user()->is_available ? 'checked' : '' }}>
+        <label class="btn btn-outline-success" for="availableOnline">🟢 Online</label>
+
+        <input type="radio" class="btn-check" name="is_available" id="availableOffline" value="0" autocomplete="off"
+            {{ !auth()->guard('driver')->user()->is_available ? 'checked' : '' }}>
+        <label class="btn btn-outline-danger" for="availableOffline">🔴 Offline</label>
+    </div>
+</div>
+
 
             <button type="submit" class="btn btn-custom">Update</button>
         </form>
