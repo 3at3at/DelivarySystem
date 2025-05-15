@@ -9,12 +9,13 @@ use App\Models\Driver;
 
 class ClientDeliveryController extends Controller
 {
-    public function create(Request $request)
-    {
-        $drivers = Driver::all();
-        $selectedDriver = $request->selected_driver;
-        return view('client.deliveries.create', compact('drivers', 'selectedDriver'));
-    }
+  public function create(Request $request)
+{
+    $drivers = Driver::where('is_available', true)->get(); // only available
+    $selectedDriver = $request->selected_driver;
+    return view('client.deliveries.create', compact('drivers', 'selectedDriver'));
+}
+
 
     public function index()
     {

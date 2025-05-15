@@ -55,6 +55,7 @@
                                     <form method="POST" action="{{ route('driver.delivery.update', $delivery->id) }}" class="d-flex gap-2 align-items-center">
                                         @csrf
                                         <select name="status" class="form-select form-select-sm w-auto">
+                                            <option {{ $delivery->status == 'Accepted' ? 'selected' : '' }}>Accepted</option>
                                             <option {{ $delivery->status == 'In Progress' ? 'selected' : '' }}>In Progress</option>
                                             <option {{ $delivery->status == 'Delivered' ? 'selected' : '' }}>Delivered</option>
                                             <option {{ $delivery->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>

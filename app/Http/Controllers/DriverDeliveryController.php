@@ -16,34 +16,32 @@ class DriverDeliveryController extends Controller
         return view('drivers.deliveries.index', compact('deliveries'));
     }
 
-    public function updateStatus(Request $request, $id)
+   public function updateStatus(Request $request, $id)
 {
-    $delivery = Delivery::where('driver_id', Auth::guard('driver')->id())->findOrFail($id);
+    $driver = Auth::guard('driver')->user();
+
+    if (!$driver->is_available) {
+        return back()->with('error', '❌ You are currently unavailable and cannot update delivery status.');
+    }
+
+    $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
     $delivery->status = $request->status;
     $delivery->save();
 
-    // ✅ Loyalty Program on Delivery Completion
+    // ✅ Loyalty Program
     if ($request->status === 'Delivered') {
         $loyalty = LoyaltySetting::first();
         $client = $delivery->client;
 
         if ($client && $loyalty) {
-            $km = $delivery->distance_km ?? 0; // Make sure this column exists
+            $km = $delivery->distance_km ?? 0;
             $earnedPoints = $km * $loyalty->points_per_km;
-
-            // 👉 Dump values to check what’s happening
-            dd([
-                'distance_km' => $km,
-                'points_per_km' => $loyalty->points_per_km,
-                'earned_points' => $earnedPoints,
-                'client_points_before' => $client->points,
-            ]);
 
             $client->points += $earnedPoints;
 
             if ($client->points >= $loyalty->bonus_threshold) {
                 session()->flash('bonus_earned', '🎉 Client earned a loyalty reward!');
-                $client->points = 0; // reset points after reward
+                $client->points = 0;
             }
 
             $client->save();
@@ -72,51 +70,51 @@ class DriverDeliveryController extends Controller
 
 public function accept($id)
 {
-    $driverId = Auth::guard('driver')->id();
+    $driver = Auth::guard('driver')->user();
 
-    // Check if the driver already has an active delivery
-    $hasActive = \App\Models\Delivery::where('driver_id', $driverId)
+    if (!$driver->is_available) {
+        return back()->with('error', '❌ You are currently unavailable and cannot accept deliveries.');
+    }
+
+    $hasActive = Delivery::where('driver_id', $driver->id)
         ->where('driver_status', 'accepted')
         ->where('status', 'In Progress')
         ->exists();
 
     if ($hasActive) {
-        return back()->with('error', '🚫 You already have a delivery in progress. Complete it before accepting a new one.');
+        return back()->with('error', '🚫 You already have a delivery in progress. Complete it first.');
     }
 
-    $delivery = \App\Models\Delivery::where('driver_id', $driverId)
+    $delivery = Delivery::where('driver_id', $driver->id)
         ->where('id', $id)
         ->where('driver_status', 'pending')
         ->firstOrFail();
 
     $delivery->driver_status = 'accepted';
-    $delivery->status = 'In Progress';
+    $delivery->status = 'Accepted';
     $delivery->save();
 
-    return back()->with('success', '✅ Delivery accepted and marked as In Progress.');
+    return back()->with('success', '✅ Delivery accepted.');
 }
 
 
-
-   public function reject($id)
+public function reject($id)
 {
     $driver = Auth::guard('driver')->user();
 
-    // Check if the driver is available before proceeding
     if (!$driver->is_available) {
-        return back()->with('error', 'You are currently not available to reject deliveries.');
+        return back()->with('error', '❌ You are currently unavailable and cannot reject deliveries.');
     }
 
-    // Find the delivery assigned to this driver
     $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
 
-    // Update delivery status and remove assignment
     $delivery->driver_status = 'rejected';
     $delivery->status = 'Pending';
     $delivery->driver_id = null;
     $delivery->save();
 
-    return back()->with('success', 'Delivery rejected.');
+    return back()->with('success', '🛑 Delivery rejected.');
 }
+
 
 }

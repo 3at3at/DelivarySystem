@@ -39,14 +39,15 @@
     </select>
 
     <select name="driver_id" class="w-full border p-2 rounded mb-3">
-        <option value="">Auto-Assign Driver</option>
-        @foreach ($drivers as $driver)
-            <option value="{{ $driver->id }}"
-                {{ isset($selectedDriver) && $selectedDriver == $driver->id ? 'selected' : '' }}>
-                {{ $driver->name }}
-            </option>
-        @endforeach
-    </select>
+    <option value="">Auto-Assign Driver</option>
+    @foreach ($drivers as $driver)
+        <option value="{{ $driver->id }}"
+            {{ isset($selectedDriver) && $selectedDriver == $driver->id ? 'selected' : '' }}>
+            {{ $driver->name }}
+        </option>
+    @endforeach
+</select>
+
 
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
 </form>
