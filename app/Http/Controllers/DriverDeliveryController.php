@@ -16,7 +16,7 @@ class DriverDeliveryController extends Controller
         return view('drivers.deliveries.index', compact('deliveries'));
     }
 
-   public function updateStatus(Request $request, $id)
+  public function updateStatus(Request $request, $id)
 {
     $driver = Auth::guard('driver')->user();
 
@@ -31,8 +31,7 @@ class DriverDeliveryController extends Controller
     // ✅ Loyalty Program
     if ($request->status === 'Delivered') {
         $loyalty = LoyaltySetting::first();
-     $client = \App\Models\User::find($delivery->client_id);
-
+        $client = \App\Models\User::find($delivery->client_id);
 
         if ($client && $loyalty) {
             $km = $delivery->distance_km ?? 0;
@@ -41,15 +40,18 @@ class DriverDeliveryController extends Controller
             $client->points += $earnedPoints;
 
             if ($client->points >= $loyalty->bonus_threshold) {
+                $client->points = 0; // Reset after reward
+                $client->has_bonus = true;
+                $client->save();
 
-                $client->points = 0; // reset points after reward
-               $client->has_bonus = true;
-                  $client->save();
-                   session()->flash('bonus_earned', '🎉 Client earned a loyalty reward!');
-
+                // 🎯 Redirect to a special view with bonus info
+                return view('drivers.bonus-earned', [
+                    'clientName' => $client->name,
+                    'reward' => $loyalty->bonus_reward
+                ]);
             }
 
-
+            $client->save();
         }
     }
 
