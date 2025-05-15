@@ -14,8 +14,8 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $activeDrivers = Driver::where('is_available', true)->count(); 
-        $pendingDeliveries = Delivery::where('status', 'Pending')->count(); 
+        $activeDrivers = Driver::where('is_available', true)->count();
+        $pendingDeliveries = Delivery::where('status', 'Pending')->count();
 
         return view('admin.dashboard', compact('activeDrivers', 'pendingDeliveries'));
     }
@@ -189,4 +189,13 @@ class AdminController extends Controller
 
         return back()->with('success', 'Loyalty settings updated!');
     }
+    // Show Loyalty Settings Form
+public function loyalty()
+{
+    $setting = \App\Models\LoyaltySetting::first();
+    return view('admin.loyalty', compact('setting'));
+}
+
+// Save Loyalty Settings
+
 }

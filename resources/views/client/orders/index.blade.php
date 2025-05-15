@@ -46,11 +46,43 @@
                 @endif
             </td>
 
-            <td class="p-3">{{ $delivery->created_at->format('Y-m-d H:i') }}</td>
- <td class="p-3">
-                {{ $symbol }}{{ number_format($delivery->converted_price, 2) }}
-                <span class="text-xs text-gray-500">({{ $delivery->currency }})</span>
-            </td>
+           <td class="p-3">{{ $delivery->created_at->format('Y-m-d H:i') }}</td>
+           <td class="p-3">
+    @php
+        $symbol = match($delivery->currency) {
+            'USD' => '$',
+            'EUR' => '€',
+            'LBP' => 'ل.ل',
+            default => '',
+        };
+
+        $convertedOriginal = $delivery->original_price
+            ? $delivery->original_price * ($delivery->currency === 'USD' ? 1/89500 : ($delivery->currency === 'EUR' ? 1/96000 : 1))
+            : null;
+
+      $hasDiscount = $delivery->original_price && $delivery->original_price > $delivery->price;
+
+    @endphp
+
+    @if ($hasDiscount)
+        <span class="line-through text-gray-500 text-xs">
+            {{ $symbol }}{{ number_format($convertedOriginal, 2) }}
+        </span><br>
+        <span class="text-green-600 font-semibold">
+            {{ $symbol }}{{ number_format($delivery->converted_price, 2) }}
+        </span><br>
+        <span class="text-xs text-green-600">🎁 Discount Applied</span>
+    @else
+        <span class="text-black font-medium">
+            {{ $symbol }}{{ number_format($delivery->converted_price, 2) }}
+        </span>
+    @endif
+
+    <span class="text-xs text-gray-500">({{ $delivery->currency }})</span>
+</td>
+
+
+
             <td class="p-3">
     {{ strtoupper($delivery->payment_method) }}
     <br>

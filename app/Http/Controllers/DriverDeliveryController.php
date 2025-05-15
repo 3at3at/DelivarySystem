@@ -31,7 +31,8 @@ class DriverDeliveryController extends Controller
     // ✅ Loyalty Program
     if ($request->status === 'Delivered') {
         $loyalty = LoyaltySetting::first();
-        $client = $delivery->client;
+     $client = \App\Models\User::find($delivery->client_id);
+
 
         if ($client && $loyalty) {
             $km = $delivery->distance_km ?? 0;
@@ -40,11 +41,15 @@ class DriverDeliveryController extends Controller
             $client->points += $earnedPoints;
 
             if ($client->points >= $loyalty->bonus_threshold) {
-                session()->flash('bonus_earned', '🎉 Client earned a loyalty reward!');
-                $client->points = 0;
+
+                $client->points = 0; // reset points after reward
+               $client->has_bonus = true;
+                  $client->save();
+                   session()->flash('bonus_earned', '🎉 Client earned a loyalty reward!');
+
             }
 
-            $client->save();
+
         }
     }
 

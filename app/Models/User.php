@@ -24,7 +24,8 @@ class User extends Authenticatable
     'phone',
     'address',
     'preferred_currency',
-    'points'
+    'points',
+    'has_bonus'
 ];
 
 
@@ -43,11 +44,17 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+   /* protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
+    }*/
+    protected $casts = [
+    'email_verified_at' => 'datetime',
+    'password' => 'hashed',
+    'points' => 'integer', // ✅ Add this to ensure correct saving
+];
+
 }

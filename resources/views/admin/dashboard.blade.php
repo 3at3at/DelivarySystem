@@ -99,11 +99,11 @@
                         🚚 Drivers
                     </a>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <a href="{{ route('admin.loyalty') }}" class="btn btn-success dashboard-btn btn-block py-3">
-                        🎁 Loyalty Settings
-                    </a>
-                </div>
+                <div>
+              <a href="{{ route('admin.loyalty') }}" class="btn btn-success dashboard-btn btn-block py-3">
+    🎁 Loyalty Settings
+</a>
+</div>
                 <div class="col-md-3 mb-3">
                     <a href="{{ route('admin.reports') }}" class="btn btn-warning dashboard-btn btn-block py-3">
                         📊 Reports

@@ -71,7 +71,8 @@ Route::prefix('admin')->middleware(['adminpanel', 'checkadmin'])->group(function
 
     Route::get('/drivers/search', [AdminController::class, 'searchDrivers'])->name('admin.drivers.search');
 
-    Route::get('/loyalty', [AdminController::class, 'loyaltySettings'])->name('admin.loyalty');
+    Route::get('/loyalty', [AdminController::class, 'loyalty'])->name('admin.loyalty');
+
     Route::post('/loyalty/update', [AdminController::class, 'updateLoyalty'])->name('admin.loyalty.update');
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
