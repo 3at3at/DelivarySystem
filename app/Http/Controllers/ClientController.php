@@ -9,8 +9,12 @@ class ClientController extends Controller
 {
     public function dashboard()
     {
+         $bonusMessage = null;
+
         $client = Auth::user(); // User is the Client
-        return view('client.dashboard', compact('client'));
+
+      return view('client.dashboard', compact('client', 'bonusMessage'));
+
     }
 
     public function profile()

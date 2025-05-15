@@ -37,6 +37,7 @@ public function store(Request $request)
         'urgency'             => 'required|in:normal,urgent',
         'scheduled_at'        => 'required|date',
         'driver_id'           => 'nullable|exists:drivers,id',
+
     ]);
 
     $scheduledAt = $request->scheduled_at;
@@ -90,7 +91,8 @@ if ($driverId) {
         }
     }
 // Step: Currency Conversion based on user's preference
-$user = Auth::user();
+$user = \App\Models\User::find(Auth::id());
+
 $preferredCurrency = strtoupper($user->preferred_currency ?? 'LBP');
 
 $exchangeRates = [
@@ -100,10 +102,37 @@ $exchangeRates = [
 ];
 
 $conversionRate = $exchangeRates[$preferredCurrency] ?? 1;
-$calculatedPrice = $calculatedPrice > 0 ? $calculatedPrice : 10000; // fallback safety
+$calculatedPrice = $calculatedPrice > 0 ? $calculatedPrice : 10000;
+
+// ✅ Store original BEFORE applying any discount
+$originalPrice = $calculatedPrice;
+
 $convertedPrice = round($calculatedPrice * $conversionRate, 6);
 
 $distanceKm = $this->estimateDistance($request->pickup_location, $request->dropoff_location);
+
+if ($user->has_bonus) {
+    $loyalty = \App\Models\LoyaltySetting::first();
+    $bonusPercent = $loyalty->bonus_reward ?? 0;
+
+    $discountAmount = $originalPrice * ($bonusPercent / 100);
+    $calculatedPrice = $originalPrice - $discountAmount;
+    $convertedPrice = round($calculatedPrice * $conversionRate, 6); // apply to converted price too
+
+    // reset bonus flag
+   // $user->has_bonus = false;
+   // $user->save();
+
+    session()->flash('success', '🎁 Loyalty discount of ' . $bonusPercent . '% applied!');
+}
+/*dd([
+    'has_bonus' => $user->has_bonus,
+    'original_price' => $originalPrice,
+    'discount_applied' => $calculatedPrice < $originalPrice,
+    'calculated_price' => $calculatedPrice,
+    'converted_price' => $convertedPrice,
+]);*/
+
     // Save delivery even if driver is not assigned
     Delivery::create([
         'client_id'          => Auth::id(),
@@ -115,7 +144,9 @@ $distanceKm = $this->estimateDistance($request->pickup_location, $request->dropo
         'package_dimensions' => $request->package_dimensions,
         'urgency'            => $request->urgency,
         'scheduled_at'       => $scheduledAt,
-        'delivery_km'        => $distanceKm, 
+      'distance_km' => $distanceKm, // ✅ this matches your DB column
+       'original_price' => $originalPrice,
+
         'status'             => 'Pending',
      // Save real price in LBP
     'price'              => $calculatedPrice,
@@ -127,7 +158,14 @@ $distanceKm = $this->estimateDistance($request->pickup_location, $request->dropo
 'is_paid' => in_array($request->payment_method, ['cod']) ? false : true, // Pay later for COD
 
 
+
     ]);
+    // Reset bonus AFTER successful delivery creation
+if ($user->has_bonus) {
+    $user->has_bonus = false;
+    $user->save();
+}
+
 
     return redirect()->route('orders.index')->with('success',
         $driverId ? 'Delivery created and driver assigned.' : 'Delivery created. Awaiting driver assignment.');
@@ -156,7 +194,7 @@ private function estimateDistance($pickup, $dropoff): float
 {
     // Very basic heuristic: count differing characters between locations
     similar_text(strtolower($pickup), strtolower($dropoff), $percent);
-    
+
     // The less similar the names, the longer the distance
     $distance = 100 - $percent;
 

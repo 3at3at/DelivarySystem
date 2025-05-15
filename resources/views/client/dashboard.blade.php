@@ -1,10 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
+
+
 <div class="max-w-4xl mx-auto mt-8">
     <!-- Profile Card -->
+
+
     <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h2 class="text-2xl font-bold text-blue-600 mb-4">👋 Welcome, {{ Auth::user()->name }}</h2>
+        <h2 class="text-2xl font-bold text-blue-600 mb-4">Welcome, {{ Auth::user()->name }}</h2>
+       @if(session('bonus_earned'))
+    <div class="bg-green-100 text-green-800 px-4 py-3 rounded shadow mb-4 border border-green-300">
+        {{ session('bonus_earned') }}
+    </div>
+@endif
+
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <p class="text-gray-700"><strong>Name:</strong> {{ Auth::user()->name }}</p>
@@ -29,6 +40,14 @@
             👨‍✈️ View Available Drivers
         </a>
     </div>
+    @if(session('bonus_earned'))
+    <div class="alert alert-success">
+        {{ session('bonus_earned') }}
+    </div>
+@endif
+
+
+
 
     <!-- Optional Section: Short Stats (Future) -->
     <!-- <div class="bg-white shadow p-4 rounded">
