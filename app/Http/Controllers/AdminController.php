@@ -9,6 +9,10 @@ use App\Mail\DriverAssignedMail;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Models\LoyaltySetting;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
 
 class AdminController extends Controller
 {
@@ -167,11 +171,6 @@ class AdminController extends Controller
         return response()->json($drivers);
     }
 
-    public function loyaltySettings()
-    {
-        $setting = LoyaltySetting::first();
-        return view('admin.loyalty', compact('setting'));
-    }
 
     public function updateLoyalty(Request $request)
     {
@@ -198,4 +197,83 @@ public function loyalty()
 
 // Save Loyalty Settings
 
+public function reports()
+{
+    // Total earnings from completed deliveries
+    $totalEarnings = Delivery::where('status', 'Delivered')->sum('price');
+
+    // Total revenue from all deliveries regardless of status
+    $totalRevenue = Delivery::sum('price');
+
+    // Driver stats: count of completed deliveries per driver
+    $driverStats = Driver::withCount([
+        'deliveries as deliveries_count' => function ($query) {
+            $query->where('status', 'Delivered');
+        }
+    ])->get();
+
+    // Top 5 drivers with the highest number of completed deliveries
+    $topDrivers = Driver::withCount(['deliveries as deliveries_count' => function ($query) {
+        $query->where('status', 'Delivered');
+    }])
+    ->orderByDesc('deliveries_count')
+    ->take(5)
+    ->get();
+
+    // Top 5 clients by number of completed deliveries
+    $topClients = User::withCount(['deliveries' => function($query) {
+    $query->where('status', 'Delivered');
+}])
+->orderByDesc('deliveries_count')
+->take(5)
+->get();
+
+    // Monthly stats for completed deliveries (number of deliveries per month)
+  $monthlyStats = Delivery::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
+        ->where('status', 'Delivered')
+        ->groupBy('month')
+        ->orderBy('month')
+        ->get();
+
+        $dailyTrends = Delivery::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+    ->where('status', 'Delivered')
+    ->groupBy('date')
+    ->orderBy('date')
+    ->get();
+
+    $activeDrivers = Driver::whereHas('deliveries', function ($query) {
+    $query->whereIn('status', ['In Progress', 'Accepted'])
+          ->where('driver_status', 'accepted');
+})->get();
+
+    $pendingDeliveries = Delivery::where('status', 'Pending')->get();
+
+
+    return view('admin.reports', [
+    'totalEarnings' => $totalEarnings,
+    'totalRevenue' => $totalRevenue,
+    'driverStats' => $driverStats,
+    'topDrivers' => $topDrivers,
+    'clientStats' => $topClients,
+    'monthlyStats' => $monthlyStats,
+    'dailyTrends' => $dailyTrends,  
+    'activeDrivers' => $activeDrivers, 
+    'pendingDeliveries' => $pendingDeliveries, 
+]);
+
 }
+
+public function downloadReportPDF()
+{
+    $totalEarnings = Delivery::sum('price');
+    $topDrivers = Driver::withCount('deliveries')->orderBy('deliveries_count', 'desc')->take(5)->get();
+    $topClients = User::withCount('deliveries')->orderBy('deliveries_count', 'desc')->take(5)->get();
+    $deliveries = Delivery::with(['driver', 'client'])->latest()->take(10)->get();
+
+    $pdf = Pdf::loadView('admin.reports.pdf', compact('totalEarnings', 'topDrivers', 'topClients', 'deliveries'));
+
+    return $pdf->download('delivery_report.pdf');
+}
+
+}
+

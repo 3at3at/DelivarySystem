@@ -17,6 +17,8 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientAuthController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MessageController;
+use App\Exports\ReportExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', fn () => view('welcome'));
 
@@ -115,3 +117,8 @@ Route::middleware(['auth:driver'])->group(function () {
 
 Route::get('/client/calendar', [ClientDeliveryController::class, 'calendar'])->name('client.calendar');
 
+Route::get('/reports/download-pdf', [AdminController::class, 'downloadReportPDF'])->name('admin.reports.pdf');
+
+Route::get('/admin/reports/download-excel', function () {
+    return Excel::download(new ReportExport, 'delivery_report.xlsx');
+})->name('admin.reports.download.excel');
