@@ -39,6 +39,10 @@
         <a href="{{ route('client.drivers.list') }}" class="bg-green-600 text-white text-center px-6 py-3 rounded-lg shadow hover:bg-green-700 transition">
             👨‍✈️ View Available Drivers
         </a>
+        <a href="{{ route('client.calendar') }}" class="bg-yellow-500 text-white text-center px-6 py-3 rounded-lg shadow hover:bg-yellow-600 transition">
+    📅 View Delivery Calendar
+</a>
+
     </div>
     @if(session('bonus_earned'))
     <div class="alert alert-success">

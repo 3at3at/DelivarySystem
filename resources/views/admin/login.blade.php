@@ -1,40 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin Login</title>
+    <meta charset="UTF-8">
+    <title>Admin Login | SpeedGo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
 
-   <nav class="bg-white shadow p-4 flex justify-between items-center">
-        <div class="text-xl font-bold text-blue-600">
-            🚚 SpeedGo Delivery
+    <!-- Optional Custom Styles -->
+    <style>
+        body {
+            background: #f1f5f9;
+        }
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-white shadow-sm py-3">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">🚚 SpeedGo Delivery</span>
         </div>
     </nav>
 
-<div class="container py-5">
-    <h2 class="text-center mb-4">Admin Login</h2>
+    <!-- Login Form Section -->
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="login-card w-100" style="max-width: 400px;">
+            <h3 class="text-center text-primary mb-4">Admin Login</h3>
 
-    <form method="POST" action="{{ route('admin.login.submit') }}" class="mx-auto" style="max-width: 400px;">
-        @csrf
+            <form method="POST" action="{{ route('admin.login.submit') }}">
+                @csrf
 
-        <div class="mb-3">
-            <label>Email</label>
-            <input type="email" name="email" class="form-control" required autofocus>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email address</label>
+                    <input id="email" type="email" name="email" class="form-control" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input id="password" type="password" name="password" class="form-control" required>
+                </div>
+
+                @if($errors->any())
+                    <div class="alert alert-danger">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label>Password</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-
-        @if($errors->any())
-            <div class="alert alert-danger">{{ $errors->first() }}</div>
-        @endif
-
-        <button class="btn btn-primary w-100">Login</button>
-    </form>
-</div>
+    </div>
 
 </body>
 </html>
