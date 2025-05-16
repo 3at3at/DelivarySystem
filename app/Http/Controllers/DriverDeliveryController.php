@@ -3,62 +3,67 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Delivery;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Delivery;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\LoyaltySetting;
 
 class DriverDeliveryController extends Controller
 {
+    // Show assigned deliveries (with client name)
     public function index()
     {
-        $deliveries = Delivery::where('driver_id', Auth::guard('driver')->id())->get();
+        $deliveries = Delivery::where('driver_id', Auth::guard('driver')->id())
+            ->with('client') // eager load client
+            ->get();
+
         return view('drivers.deliveries.index', compact('deliveries'));
     }
 
-  public function updateStatus(Request $request, $id)
-{
-    $driver = Auth::guard('driver')->user();
+    // Update delivery status
+    public function updateStatus(Request $request, $id)
+    {
+        $driver = Auth::guard('driver')->user();
 
-    if (!$driver->is_available) {
-        return back()->with('error', '❌ You are currently unavailable and cannot update delivery status.');
-    }
-
-    $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
-    $delivery->status = $request->status;
-    $delivery->save();
-
-    // ✅ Loyalty Program
-    if ($request->status === 'Delivered') {
-        $loyalty = LoyaltySetting::first();
-        $client = \App\Models\User::find($delivery->client_id);
-
-        if ($client && $loyalty) {
-            $km = $delivery->distance_km ?? 0;
-            $earnedPoints = $km * $loyalty->points_per_km;
-
-            $client->points += $earnedPoints;
-
-            if ($client->points >= $loyalty->bonus_threshold) {
-                $client->points = 0; // Reset after reward
-                $client->has_bonus = true;
-                $client->save();
-
-                // 🎯 Redirect to a special view with bonus info
-                return view('drivers.bonus-earned', [
-                    'clientName' => $client->name,
-                    'reward' => $loyalty->bonus_reward
-                ]);
-            }
-
-            $client->save();
+        if (!$driver->is_available) {
+            return back()->with('error', '❌ You are currently unavailable and cannot update delivery status.');
         }
+
+        $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
+        $delivery->status = $request->status;
+        $delivery->save();
+
+        // ✅ Loyalty Program
+        if ($request->status === 'Delivered') {
+            $loyalty = LoyaltySetting::first();
+            $client = User::find($delivery->client_id);
+
+            if ($client && $loyalty) {
+                $km = $delivery->distance_km ?? 0;
+                $earnedPoints = $km * $loyalty->points_per_km;
+
+                $client->points += $earnedPoints;
+
+                if ($client->points >= $loyalty->bonus_threshold) {
+                    $client->points = 0;
+                    $client->has_bonus = true;
+                    $client->save();
+
+                    return view('drivers.bonus-earned', [
+                        'clientName' => $client->name,
+                        'reward' => $loyalty->bonus_reward
+                    ]);
+                }
+
+                $client->save();
+            }
+        }
+
+        return back()->with('success', 'Delivery status updated.');
     }
 
-    return back()->with('success', 'Delivery status updated.');
-}
-
-
+    // Show deliveries in calendar format
     public function calendar()
     {
         $deliveries = Delivery::where('driver_id', Auth::guard('driver')->id())->get();
@@ -74,54 +79,52 @@ class DriverDeliveryController extends Controller
         return view('drivers.calendar', ['events' => $events]);
     }
 
+    // Accept a pending delivery
+    public function accept($id)
+    {
+        $driver = Auth::guard('driver')->user();
 
-public function accept($id)
-{
-    $driver = Auth::guard('driver')->user();
+        if (!$driver->is_available) {
+            return back()->with('error', '❌ You are currently unavailable and cannot accept deliveries.');
+        }
 
-    if (!$driver->is_available) {
-        return back()->with('error', '❌ You are currently unavailable and cannot accept deliveries.');
+        $hasActive = Delivery::where('driver_id', $driver->id)
+            ->where('driver_status', 'accepted')
+            ->where('status', 'In Progress')
+            ->exists();
+
+        if ($hasActive) {
+            return back()->with('error', '🚫 You already have a delivery in progress. Complete it first.');
+        }
+
+        $delivery = Delivery::where('driver_id', $driver->id)
+            ->where('id', $id)
+            ->where('driver_status', 'pending')
+            ->firstOrFail();
+
+        $delivery->driver_status = 'accepted';
+        $delivery->status = 'Accepted';
+        $delivery->save();
+
+        return back()->with('success', '✅ Delivery accepted.');
     }
 
-    $hasActive = Delivery::where('driver_id', $driver->id)
-        ->where('driver_status', 'accepted')
-        ->where('status', 'In Progress')
-        ->exists();
+    // Reject a delivery
+    public function reject($id)
+    {
+        $driver = Auth::guard('driver')->user();
 
-    if ($hasActive) {
-        return back()->with('error', '🚫 You already have a delivery in progress. Complete it first.');
+        if (!$driver->is_available) {
+            return back()->with('error', '❌ You are currently unavailable and cannot reject deliveries.');
+        }
+
+        $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
+
+        $delivery->driver_status = 'rejected';
+        $delivery->status = 'Pending';
+        $delivery->driver_id = null;
+        $delivery->save();
+
+        return back()->with('success', '🛑 Delivery rejected.');
     }
-
-    $delivery = Delivery::where('driver_id', $driver->id)
-        ->where('id', $id)
-        ->where('driver_status', 'pending')
-        ->firstOrFail();
-
-    $delivery->driver_status = 'accepted';
-    $delivery->status = 'Accepted';
-    $delivery->save();
-
-    return back()->with('success', '✅ Delivery accepted.');
-}
-
-
-public function reject($id)
-{
-    $driver = Auth::guard('driver')->user();
-
-    if (!$driver->is_available) {
-        return back()->with('error', '❌ You are currently unavailable and cannot reject deliveries.');
-    }
-
-    $delivery = Delivery::where('driver_id', $driver->id)->findOrFail($id);
-
-    $delivery->driver_status = 'rejected';
-    $delivery->status = 'Pending';
-    $delivery->driver_id = null;
-    $delivery->save();
-
-    return back()->with('success', '🛑 Delivery rejected.');
-}
-
-
 }
