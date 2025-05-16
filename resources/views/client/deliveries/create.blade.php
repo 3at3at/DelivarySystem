@@ -28,7 +28,10 @@
     </select>
 
     <label>Scheduled Time</label>
-    <input type="datetime-local" name="scheduled_at" class="form-control mb-3" required>
+    <input type="datetime-local" name="scheduled_at"
+       class="form-control"
+       min="{{ now()->format('Y-m-d\TH:i') }}"
+       required>
 
     <label>Payment Method</label>
     <select name="payment_method" class="form-select mb-3" required>
