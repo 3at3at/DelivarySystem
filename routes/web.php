@@ -115,3 +115,4 @@ Route::middleware(['auth:driver'])->group(function () {
 
 Route::get('/client/calendar', [ClientDeliveryController::class, 'calendar'])->name('client.calendar');
 
+

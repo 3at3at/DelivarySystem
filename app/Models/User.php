@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Delivery;
 
 class User extends Authenticatable
 {
@@ -56,5 +57,15 @@ class User extends Authenticatable
     'password' => 'hashed',
     'points' => 'integer', // ✅ Add this to ensure correct saving
 ];
+
+
+
+public function deliveries()
+{
+   
+    return $this->hasMany(Delivery::class, 'client_id', 'id');
+}
+
+
 
 }
