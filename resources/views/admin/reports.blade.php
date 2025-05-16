@@ -61,16 +61,41 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <h5>Service Demand (Last 30 Days)</h5>
-            <ul>
-                @foreach ($dailyTrends as $trend)
-                    <li>{{ $trend->date }}: {{ $trend->count }} deliveries</li>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5>📦 All Deliveries (Service Demand)</h5>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Order Number</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Client</th>
+                    <th>Driver</th>
+                    <th>Pickup</th>
+                    <th>Dropoff</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php $count = 1; @endphp
+                @foreach (\App\Models\Delivery::with('client', 'driver')->latest()->get() as $delivery)
+                    <tr>
+                        <td>{{ $count++ }}</td>
+                        <td>{{ \Carbon\Carbon::parse($delivery->scheduled_at)->format('Y-m-d H:i') }}</td>
+                        <td><span class="badge bg-secondary">{{ $delivery->status }}</span></td>
+                        <td>{{ $delivery->client->name ?? 'N/A' }}</td>
+                        <td>{{ $delivery->driver->name ?? 'Unassigned' }}</td>
+                        <td>{{ $delivery->pickup_location }}</td>
+                        <td>{{ $delivery->dropoff_location }}</td>
+                    </tr>
                 @endforeach
-            </ul>
-        </div>
+            </tbody>
+        </table>
     </div>
+</div>
+
+
+
   <div class="d-flex gap-2 mb-3">
     <a href="{{ route('admin.reports.pdf') }}" class="btn btn-outline-primary w-100" style="max-width: 200px;">
         Download PDF
