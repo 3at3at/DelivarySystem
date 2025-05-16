@@ -71,6 +71,16 @@
             </ul>
         </div>
     </div>
+  <div class="d-flex gap-2 mb-3">
+    <a href="{{ route('admin.reports.pdf') }}" class="btn btn-outline-primary w-100" style="max-width: 200px;">
+        Download PDF
+    </a>
+
+    <a href="{{ route('admin.reports.download.excel') }}" class="btn btn-outline-success w-100" style="max-width: 200px;">
+        Download Excel
+    </a>
+</div>
+
 </div>
 </body>
 </html>

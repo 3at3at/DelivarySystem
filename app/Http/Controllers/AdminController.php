@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Models\LoyaltySetting;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
 
 class AdminController extends Controller
 {
@@ -262,6 +265,19 @@ public function reports()
     'pendingDeliveries' => $pendingDeliveries, 
 ]);
 
+
+
+}
+public function downloadReportPDF()
+{
+    $totalEarnings = Delivery::sum('price');
+    $topDrivers = Driver::withCount('deliveries')->orderBy('deliveries_count', 'desc')->take(5)->get();
+    $topClients = User::withCount('deliveries')->orderBy('deliveries_count', 'desc')->take(5)->get();
+    $deliveries = Delivery::with(['driver', 'client'])->latest()->take(10)->get();
+
+    $pdf = Pdf::loadView('admin.reports.pdf', compact('totalEarnings', 'topDrivers', 'topClients', 'deliveries'));
+
+    return $pdf->download('delivery_report.pdf');
 }
 
 }
