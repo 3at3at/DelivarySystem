@@ -5,23 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Delivery;
-use App\Models\Order;
 use App\Models\User;
 use App\Models\LoyaltySetting;
 
 class DriverDeliveryController extends Controller
 {
-    // Show assigned deliveries (with client name)
     public function index()
     {
         $deliveries = Delivery::where('driver_id', Auth::guard('driver')->id())
-            ->with('client') // eager load client
+            ->with('client')
             ->get();
 
         return view('drivers.deliveries.index', compact('deliveries'));
     }
 
-    // Update delivery status
     public function updateStatus(Request $request, $id)
     {
         $driver = Auth::guard('driver')->user();
@@ -34,7 +31,6 @@ class DriverDeliveryController extends Controller
         $delivery->status = $request->status;
         $delivery->save();
 
-        // ✅ Loyalty Program
         if ($request->status === 'Delivered') {
             $loyalty = LoyaltySetting::first();
             $client = User::find($delivery->client_id);
@@ -63,7 +59,6 @@ class DriverDeliveryController extends Controller
         return back()->with('success', 'Delivery status updated.');
     }
 
-    // Show deliveries in calendar format
     public function calendar()
     {
         $deliveries = Delivery::where('driver_id', Auth::guard('driver')->id())->get();
@@ -79,7 +74,6 @@ class DriverDeliveryController extends Controller
         return view('drivers.calendar', ['events' => $events]);
     }
 
-    // Accept a pending delivery
     public function accept($id)
     {
         $driver = Auth::guard('driver')->user();
@@ -109,7 +103,6 @@ class DriverDeliveryController extends Controller
         return back()->with('success', '✅ Delivery accepted.');
     }
 
-    // Reject a delivery
     public function reject($id)
     {
         $driver = Auth::guard('driver')->user();
