@@ -60,10 +60,10 @@ class AdminController extends Controller
 
     $deliveries = Delivery::with(['client', 'driver'])
         ->when($status, function ($query) use ($status) {
-            // Filter by selected status
+            // Filter by selected status mostafa
             $query->where('status', $status);
         }, function ($query) {
-            // If no status is selected, show all + rejected
+            // i show all when no status is selected
             $query->where(function ($q) {
                 $q->whereNotNull('status')
                   ->orWhere('driver_status', 'rejected');
@@ -87,12 +87,12 @@ class AdminController extends Controller
     $delivery = Delivery::findOrFail($id);
     $driver = Driver::findOrFail($request->driver_id);
 
-    // 1. Check availability
+
     if (!$driver->is_available) {
         return back()->with('error', 'Driver is marked as unavailable.');
     }
 
-    // 2. Check if driver already has an active delivery
+    
     $hasActiveDelivery = Delivery::where('driver_id', $driver->id)
         ->whereIn('status', ['Accepted', 'In Progress'])
         ->exists();
@@ -101,7 +101,6 @@ class AdminController extends Controller
         return back()->with('error', 'Driver already has an active delivery.');
     }
 
-    // 3. Check for conflict at the same time
     $conflict = Delivery::where('driver_id', $driver->id)
         ->where('scheduled_at', $delivery->scheduled_at)
         ->exists();
@@ -110,7 +109,6 @@ class AdminController extends Controller
         return back()->with('error', 'Driver already has a delivery at this time.');
     }
 
-    // 4. Check working hours
     if ($driver->working_hours && $delivery->scheduled_at) {
         $deliveryTime = Carbon::parse($delivery->scheduled_at)->format('H:i');
         $deliveryDay = Carbon::parse($delivery->scheduled_at)->format('l');
@@ -145,13 +143,12 @@ class AdminController extends Controller
         }
     }
 
-    // ✅ Assign delivery
     $delivery->driver_id = $driver->id;
-    $delivery->status = 'Pending';          // keep status pending until accepted
-    $delivery->driver_status = 'pending';   // driver must accept it
+    $delivery->status = 'Pending';          
+    $delivery->driver_status = 'pending';   
     $delivery->save();
 
-    // ✅ Notify driver
+
     if ($driver->email) {
         Mail::to($driver->email)->send(new DriverAssignedMail($delivery));
     }
@@ -188,31 +185,30 @@ class AdminController extends Controller
 
         return back()->with('success', 'Loyalty settings updated!');
     }
-    // Show Loyalty Settings Form
+
 public function loyalty()
 {
     $setting = \App\Models\LoyaltySetting::first();
     return view('admin.loyalty', compact('setting'));
 }
 
-// Save Loyalty Settings
 
 public function reports()
 {
-    // Total earnings from completed deliveries
+   
     $totalEarnings = Delivery::where('status', 'Delivered')->sum('price');
 
-    // Total revenue from all deliveries regardless of status
+    
     $totalRevenue = Delivery::sum('price');
 
-    // Driver stats: count of completed deliveries per driver
+    
     $driverStats = Driver::withCount([
         'deliveries as deliveries_count' => function ($query) {
             $query->where('status', 'Delivered');
         }
     ])->get();
 
-    // Top 5 drivers with the highest number of completed deliveries
+   
     $topDrivers = Driver::withCount(['deliveries as deliveries_count' => function ($query) {
         $query->where('status', 'Delivered');
     }])
@@ -220,7 +216,6 @@ public function reports()
     ->take(5)
     ->get();
 
-    // Top 5 clients by number of completed deliveries
     $topClients = User::withCount(['deliveries' => function($query) {
     $query->where('status', 'Delivered');
 }])
@@ -228,7 +223,7 @@ public function reports()
 ->take(5)
 ->get();
 
-    // Monthly stats for completed deliveries (number of deliveries per month)
+  
   $monthlyStats = Delivery::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count")
         ->where('status', 'Delivered')
         ->groupBy('month')

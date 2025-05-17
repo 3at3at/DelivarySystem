@@ -13,7 +13,6 @@ class ChatController extends Controller
     {
         $delivery = Delivery::with('client', 'driver')->findOrFail($deliveryId);
 
-        // Access control check
         $isClient = Auth::check() && Auth::id() === $delivery->client_id;
         $isDriver = Auth::guard('driver')->check() && Auth::guard('driver')->id() === $delivery->driver_id;
 
